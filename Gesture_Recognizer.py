@@ -210,9 +210,9 @@ class Gesture_Recognizer:
 	# Function: cluster_poses
 	# -----------------------
 	# for each gesture, this will cluster into N different 'poses'
-	def cluster_positions (self):
+	def train_model (self):
 
-		n_components = 5
+		n_components = 10
 
 		for gesture_type, gestures in self.gestures.items ():
 			
@@ -260,6 +260,26 @@ class Gesture_Recognizer:
 			self.hmms[gesture_type] = model
 
 
+		for gesture_type, gestures in self.gestures.items ():
+
+			print "##########[ --- GESTURE TYPE: ", str(gesture_type), " --- ]##########"
+			for gesture in gestures:
+
+				print "--- gesture: ---"
+
+				scores = []
+				for label, hmm in self.hmms.items ():
+					score = hmm.score (gesture)
+					print "	- score for " + str(label) + " = ", score
+					scores.append (score)
+				if scores[0] > scores[1]:
+					print "----------> label = 0"
+				else:
+					print "----------> label = 1"
+
+
+
+
 
 
 
@@ -290,8 +310,7 @@ if __name__ == "__main__":
 	gr = Gesture_Recognizer ()
 	gr.load_data ()
 	gr.print_data_stats ()
-
-	gr.cluster_positions ()
+	gr.train_model ()
 
 
 
