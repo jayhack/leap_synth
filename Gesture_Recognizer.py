@@ -40,8 +40,11 @@ class Gesture_Recognizer:
 
 	#--- Training/Testing: examples ---
 	gesture_types = []
-	gestures = {}				#dict mapping gesture_type -> list of gestures (lists of feature vectors)
+	gestures = {}			#dict mapping gesture_type -> list of gestures (lists of feature vectors)
 	positions = {}			#dict mapping gesture_type -> list of positions (feature vectors)
+
+	#--- Classification: Gaussian HMMS ---
+	hmms = {}				#dict mapping gesture_type -> hmm
 
 
 
@@ -210,60 +213,50 @@ class Gesture_Recognizer:
 
 		n_components = 5
 
-		# for gesture_type, gestures in self.gestures.items ():
-		gestures = self.gestures['u']
+		for gesture_type, gestures in self.gestures.items ():
+			
+			#--- gaussian mixture model ---
+			positions = []
+			for position in gestures[0]:
+				positions.append (position)
+			positions = np.array (positions)
+
+
+			gmm = GMM(n_components=n_components)
+			gmm.fit (positions)
+			print gmm.predict (positions)
 
 
 
-		first = np.array ([[0, 1, 2, 3], [1, 0, 1, 3], [2, 1, 2, 2]])
-		second = np.array ([[0, 1, 2, 3], [1, 0, 1, 3], [2, 1, 2, 2]])
-		third = np.array ([[0, 1, 2, 3], [1, 0, 1, 3], [2, 1, 2, 2]])			
-		test_examples = np.array([first, second, third])
+			### Debug: print out the means ###
+			# print "##########[ --- MEANS --- ]##########"
+			# print gmm.means_
+			# print "\n\n##########[ --- Weights --- ]##########"			
+			# print gmm.weights_
+			# print "\n\n##########[ --- Covars --- ]##########"			
+			# print gmm.covars_
 
-			# print test_examples[0].shape 
-
-		#--- gaussian mixture model ---
-		positions = []
-		for position in gestures[0]:
-			positions.append (position)
-		positions = np.array (positions)
-
-
-		gmm = GMM(n_components=n_components)
-		gmm.fit (positions)
-		print gmm.predict (positions)
+			new_gestures = []
+			for gesture in gestures:
+				new_gesture = []
+				for i in range(len(gesture)):
+					new_gesture.append (gesture[i][:9])
+				new_gesture = np.array (new_gesture)
+				new_gestures.append (new_gesture)
 
 
+			for gesture in new_gestures:
+				print "--- reformatted gesture: ---"
+				print gesture
 
-		### Debug: print out the means ###
-		# print "##########[ --- MEANS --- ]##########"
-		# print gmm.means_
-		# print "\n\n##########[ --- Weights --- ]##########"			
-		# print gmm.weights_
-		# print "\n\n##########[ --- Covars --- ]##########"			
-		# print gmm.covars_
+			startprob = np.array ([0.25, 0.25, 0.25, 0.25])
+			transmat = np.array([[0.4, 0.4, 0.1, 0.1], [0.1, 0.4, 0.4, 0.1], [0.1, 0.1, 0.4, 0.4], [0.1, 0.1, 0.1, 0.7]])
+			means = gmm.means_
+			model = GaussianHMM(4, "full", startprob, transmat)
+			model.fit (new_gestures)
 
-		new_gestures = []
-		for gesture in gestures:
-			new_gesture = []
-			for i in range(len(gesture)):
-				new_gesture.append (gesture[i][:9])
-			new_gesture = np.array (new_gesture)
-			new_gestures.append (new_gesture)
-
-
-		for gesture in new_gestures:
-			print "--- reformatted gesture: ---"
-			print gesture
-
-		startprob = np.array ([0.25, 0.25, 0.25, 0.25])
-		transmat = np.array([[0.4, 0.4, 0.1, 0.1], [0.1, 0.4, 0.4, 0.1], [0.1, 0.1, 0.4, 0.4], [0.1, 0.1, 0.1, 0.7]])
-		means = gmm.means_
-		model = GaussianHMM(4, "full", startprob, transmat)
-		model.fit (new_gestures)
-
-		for i in range(len(new_gestures)):
-			print model.score (new_gestures[i])
+			for i in range(len(new_gestures)):
+				print model.score (new_gestures[i])
 
 
 		# print gmm.covars_.shape
