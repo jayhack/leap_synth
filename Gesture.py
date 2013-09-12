@@ -80,11 +80,11 @@ class Pose:
 	def get_hand_features (self, hand):
 
 		hand_features = []
-		num_features = 9
+		num_features = 10
 
 		### Step 1: if the hand doesn't exist, return all zeros ###
 		if not hand:
-			return [0] * 9
+			return [0] * 10
 
 		#---------- PALM ----------
 		normal = hand.palm_normal
@@ -100,6 +100,7 @@ class Pose:
 
 		#---------- FINGERS ----------
 		fingers = hand.fingers
+		hand_features.append (len(fingers))	#number of fingers
 
 		#--- Finger position average/variance: 6 features total ---
 		finger_position_avg			= self.get_finger_position_avg (fingers)
@@ -116,7 +117,7 @@ class Pose:
 	# stores that in self.features
 	def compute_features (self):
 
-		num_features = 18
+		num_features = 21
 		self.features = []
 
 		### Step 1: ensure there are actually hands; if not, this vector is zeros ###
@@ -125,16 +126,18 @@ class Pose:
 
 		### Step 2: put in features for both hands ###
 		if num_hands == 0:
-			[0] * 18
+			[0] * num_features
 		elif num_hands == 1:
+			self.features.append (1)							#number of hands
 			self.features += self.get_hand_features (hands[0])
-			self.features += [0] * 9
+			self.features += [0] * 10
 		elif num_hands == 2:
+			self.features.append (2)							#number of hands
 			self.features += self.get_hand_features (hands[0])
 			self.features += self.get_hand_features (hands[1])
 
 
-		print self.features
+		# print self.features
 
 
 

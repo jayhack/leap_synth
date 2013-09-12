@@ -11,6 +11,7 @@
 import os
 import sys
 import pickle
+from operator import itemgetter 
 
 #--- My Files ---
 sys.path.append ('/Users/jayhack/anaconda/lib/python2.7/site-packages/scipy/')
@@ -154,16 +155,14 @@ class Gesture_Recognizer:
 			example_file.close ()
 
 			### Step 2: convert to np.array ###
-			gesture = np.array (new_gesture)
-			new_gesture = []
-			for position in gesture:
-				new_gesture.append (position[:9])
 			new_gesture = np.array (new_gesture)
-			print "--- Gesture: ---"
-			print new_gesture
+			shortened_gesture = []
+			for position in new_gesture:
+				shortened_gesture.append (position[:11])
+			shortened_gesture = np.array (shortened_gesture)
 
 			### Step 3: add to the list of gestures ###
-			self.gestures[gesture_type].append (new_gesture)
+			self.gestures[gesture_type].append (shortened_gesture)
 
 
 	# Function: get_positions
@@ -176,7 +175,6 @@ class Gesture_Recognizer:
 			for gesture in gestures:
 				for position in gesture:
 					self.positions[gesture_type].append(np.array(position))
-
 
 
 	# Function: load_data
@@ -207,7 +205,7 @@ class Gesture_Recognizer:
 			print "	", key, ": ", len(value)
 
 
-	# Function: cluster_poses
+	# Function: train_model
 	# -----------------------
 	# for each gesture, this will cluster into N different 'poses'
 	def train_model (self):
@@ -216,91 +214,38 @@ class Gesture_Recognizer:
 
 		for gesture_type, gestures in self.gestures.items ():
 			
-			#--- gaussian mixture model ---
-			positions = []
-			for position in gestures[0]:
-				positions.append (position)
-			positions = np.array (positions)
-
-
-			# gmm = GMM(n_components=n_components)
-			# gmm.fit (positions)
-			# print gmm.predict (positions)
-
-
-
-			### Debug: print out the means ###
-			# print "##########[ --- MEANS --- ]##########"
-			# print gmm.means_
-			# print "\n\n##########[ --- Weights --- ]##########"			
-			# print gmm.weights_
-			# print "\n\n##########[ --- Covars --- ]##########"			
-			# print gmm.covars_
-
-			# new_gestures = []
-			# for gesture in gestures:
-			# 	new_gesture = []
-			# 	for i in range(len(gesture)):
-			# 		new_gesture.append (gesture[i][:9])
-			# 	new_gesture = np.array (new_gesture)
-			# 	new_gestures.append (new_gesture)
-
-
-			# for gesture in new_gestures:
-			# 	print "--- reformatted gesture: ---"
-			# 	print gesture
-
-			# startprob = np.array ([0.25, 0.25, 0.25, 0.25])
-			# transmat = np.array([[0.4, 0.4, 0.1, 0.1], [0.1, 0.4, 0.4, 0.1], [0.1, 0.1, 0.4, 0.4], [0.1, 0.1, 0.1, 0.7]])
-			# means = gmm.means_
-			# model = GaussianHMM(4, "full", startprob, transmat)
-			model = GaussianHMM (4)
+			model = GaussianHMM (n_components)
 			model.fit (gestures)
 
 			self.hmms[gesture_type] = model
 
 
-		for gesture_type, gestures in self.gestures.items ():
+	# Function: get_scores
+	# --------------------------
+	# given a gesture, this will return a sorted list of (label, score). does not
+	# threshold or anything
+	def get_scores (gesture):
 
-			print "##########[ --- GESTURE TYPE: ", str(gesture_type), " --- ]##########"
-			for gesture in gestures:
+		scores = [(gesture_type, hmm.score (gesture)) for gesture_type, hmm in self.hmms.items()]
+		scores = sorted (scores, key=itemgetter(1), reverse=True)
 
-				print "--- gesture: ---"
-
-				scores = []
-				for label, hmm in self.hmms.items ():
-					score = hmm.score (gesture)
-					print "	- score for " + str(label) + " = ", score
-					scores.append (score)
-				if scores[0] > scores[1]:
-					print "----------> label = 0"
-				else:
-					print "----------> label = 1"
+		print "--- Classification Outcome ---"
+		for score in scores:
+			print "	- ", score[0], ": ", score[1]
 
 
+	# Function: classify_gesture
+	# --------------------------
+	# returns the name of a gesture if it works, 'none' otherwise
+	def classify_gesture (gesture):
 
+		threshold = -3000.0
 
-
-
-
-		# print gmm.covars_.shape
-		# model.means_ = gmm.means_
-		# model.covars_ = gmm.covars_
-
-
-
-		# trainer = hmm.HiddenMarkovModelTrainer (states=[0, 1, 2])
-		# print gestures[0]
-		# trained_model = trainer.train (gestures)
-		# print trained_model
-
-
-		# --- fit a gaussian mixture model to our data ---
-		# gaussian_hmm = GaussianHMM (n_components=2)
-		# print gaussian_hmm
-		# gaussian_hmm.fit (gestures)
-		# gaussian_hmm.predict (gestures)
-
+		scores = get_scores (gesture)
+		if scores[0][1] > threshold:
+			return scores[0][0]
+		else:
+			return None
 
 
 
@@ -311,6 +256,7 @@ if __name__ == "__main__":
 	gr.load_data ()
 	gr.print_data_stats ()
 	gr.train_model ()
+
 
 
 

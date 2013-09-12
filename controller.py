@@ -123,42 +123,67 @@ class Leap_Synth:
     # interface for recording gestures
     def record_main (self):
 
-        print_message ("What would you like to do?")
-        print " - record a gesture (enter name of gesture)"
-        print " - quit (q)"
-        response = raw_input (">>> ")
+        while (True):
+            print_message ("What would you like to do?")
+            print " - R: record a new gesture (enter name of gesture)"
+            print " - Q: quit"
+            response = raw_input ("---> ")
+            response = response.lower ()
 
-        if response == 'q':
-            exit ()
-        else:
-            self.record_gesture (response)
+            if response == 'q':
+                exit ()
+            else:
+                self.record_gesture ()
+
+
+    # Function: record_countdown 
+    # --------------------------
+    # prints out a countdown
+    def record_countdown (self):
+        print "3"
+        time.sleep (0.5)
+        print "2"
+        time.sleep (0.5)
+        print "1"
+        time.sleep (0.5)
+        print "--- record ---"
 
 
     # Function: record_gesture 
     # ------------------------
     # record a single gesture
-    def record_gesture (self, gesture_name):
+    def record_gesture (self):
 
-        ### Step 1: start the recording ###
-        print_message("Enter to start recording gesture: " + str(gesture_name))
-        sys.stdin.readline()
-        self.gesture_recognizer.start_recording_gesture (gesture_name)
-        self.is_recording = True
+        num_examples_recorded = 0
+        max_examples = 20
+        frames_per_example = 100
 
-        ### Step 2: get a single frame ###
-        breakout = False
-        while breakout == False:
-            while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
-                line = sys.stdin.readline()
-                if line:
-                    breakout = True
-            else:
+        ### Step 1: have them name the gesture ###
+        print_message ("What is this gesture called?")
+        gesture_name = raw_input("---> ")
+        print_message ("Now we will begin recording " + str(max_examples) + " examples of this gesture. Press Enter when ready.")
+        sys.stdin.readline ()
+
+        while (num_examples_recorded < max_examples):
+
+            ### Step 2: start the recording ###
+            self.record_countdown ()
+            self.gesture_recognizer.start_recording_gesture (gesture_name)
+            self.is_recording = True
+
+            ### Step 3: get a single frame ###
+            num_frames_recorded = 0
+            while (num_frames_recorded < 100):
                 frame = self.get_frame ()
                 self.gesture_recognizer.add_frame_to_recording (frame)
+                num_frames_recorded += 1
 
-        ### Step 2: stop the recording ###
-        self.gesture_recognizer.stop_recording_gesture ()
-        self.is_recording = False
+            ### Step 4: stop the recording ###
+            print_message ("### Recording Complete ###")
+            self.gesture_recognizer.stop_recording_gesture ()
+            self.is_recording = False
+            num_examples_recorded += 1
+
 
     # Function: train_main
     # --------------------
