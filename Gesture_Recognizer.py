@@ -154,10 +154,11 @@ class Gesture_Recognizer:
 			example_file.close ()
 
 			### Step 2: convert to np.array ###
+			gesture = np.array (new_gesture)
+			new_gesture = []
+			for position in gesture:
+				new_gesture.append (position[:9])
 			new_gesture = np.array (new_gesture)
-			# for position in new_gesture:
-				# position = np.array(position)
-			# new_gesture = np.array(new_gesture)
 			print "--- Gesture: ---"
 			print new_gesture
 
@@ -222,9 +223,9 @@ class Gesture_Recognizer:
 			positions = np.array (positions)
 
 
-			gmm = GMM(n_components=n_components)
-			gmm.fit (positions)
-			print gmm.predict (positions)
+			# gmm = GMM(n_components=n_components)
+			# gmm.fit (positions)
+			# print gmm.predict (positions)
 
 
 
@@ -236,27 +237,30 @@ class Gesture_Recognizer:
 			# print "\n\n##########[ --- Covars --- ]##########"			
 			# print gmm.covars_
 
-			new_gestures = []
-			for gesture in gestures:
-				new_gesture = []
-				for i in range(len(gesture)):
-					new_gesture.append (gesture[i][:9])
-				new_gesture = np.array (new_gesture)
-				new_gestures.append (new_gesture)
+			# new_gestures = []
+			# for gesture in gestures:
+			# 	new_gesture = []
+			# 	for i in range(len(gesture)):
+			# 		new_gesture.append (gesture[i][:9])
+			# 	new_gesture = np.array (new_gesture)
+			# 	new_gestures.append (new_gesture)
 
 
-			for gesture in new_gestures:
-				print "--- reformatted gesture: ---"
-				print gesture
+			# for gesture in new_gestures:
+			# 	print "--- reformatted gesture: ---"
+			# 	print gesture
 
-			startprob = np.array ([0.25, 0.25, 0.25, 0.25])
-			transmat = np.array([[0.4, 0.4, 0.1, 0.1], [0.1, 0.4, 0.4, 0.1], [0.1, 0.1, 0.4, 0.4], [0.1, 0.1, 0.1, 0.7]])
-			means = gmm.means_
-			model = GaussianHMM(4, "full", startprob, transmat)
-			model.fit (new_gestures)
+			# startprob = np.array ([0.25, 0.25, 0.25, 0.25])
+			# transmat = np.array([[0.4, 0.4, 0.1, 0.1], [0.1, 0.4, 0.4, 0.1], [0.1, 0.1, 0.4, 0.4], [0.1, 0.1, 0.1, 0.7]])
+			# means = gmm.means_
+			# model = GaussianHMM(4, "full", startprob, transmat)
+			model = GaussianHMM (4)
+			model.fit (gestures)
 
-			for i in range(len(new_gestures)):
-				print model.score (new_gestures[i])
+			self.hmms[gesture_type] = model
+
+
+
 
 
 		# print gmm.covars_.shape
