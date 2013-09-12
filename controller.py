@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/Library/Frameworks/Python.framework/Versions/2.7/bin/python
 # *------------------------------------------------------------ *
 # * Script: leap_synth.py
 # * ---------------------

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/Library/Frameworks/Python.framework/Versions/2.7/bin/python
 # *------------------------------------------------------------ *
 # * Class: Gesture_Recognizer
 # * -------------------------
@@ -13,11 +13,18 @@ import sys
 import pickle
 
 #--- My Files ---
+sys.path.append ('/Users/jayhack/anaconda/lib/python2.7/site-packages/scipy/')
 from common_utilities import print_message, print_error, print_status, print_inner_status
 from Gesture import Pose, Gesture
 
 #--- SKLearn ---
-import sklearn
+import numpy as np
+from sklearn import mixture
+from sklearn.hmm import GaussianHMM
+from sklearn.mixture import GMM
+
+#--- nltk ---
+from nltk.tag import hmm
 
 
 class Gesture_Recognizer:
@@ -34,7 +41,7 @@ class Gesture_Recognizer:
 	#--- Training/Testing: examples ---
 	gesture_types = []
 	gestures = {}				#dict mapping gesture_type -> list of gestures (lists of feature vectors)
-	all_positions = {}			#dict mapping gesture_type -> list of positions (feature vectors)
+	positions = {}			#dict mapping gesture_type -> list of positions (feature vectors)
 
 
 
@@ -138,9 +145,20 @@ class Gesture_Recognizer:
 		example_filenames = [os.path.join (gesture_dir, f) for f in os.listdir (gesture_dir)]
 		for example_filename in example_filenames:
 
+			### Step 1: load in the raw list of positions = 'gesture' ###
 			example_file = open(example_filename, 'r')
 			new_gesture = pickle.load (example_file)
 			example_file.close ()
+
+			### Step 2: convert to np.array ###
+			new_gesture = np.array (new_gesture)
+			# for position in new_gesture:
+				# position = np.array(position)
+			# new_gesture = np.array(new_gesture)
+			print "--- Gesture: ---"
+			print new_gesture
+
+			### Step 3: add to the list of gestures ###
 			self.gestures[gesture_type].append (new_gesture)
 
 
@@ -151,8 +169,9 @@ class Gesture_Recognizer:
 
 		for gesture_type, gestures in self.gestures.items ():
 			self.positions[gesture_type] = []
-			for position in gestures:
-				self.positions[gesture_type].append(position)
+			for gesture in gestures:
+				for position in gesture:
+					self.positions[gesture_type].append(np.array(position))
 
 
 
@@ -171,7 +190,7 @@ class Gesture_Recognizer:
 			gesture_dir = os.path.join (self.data_dir, gesture_type)
 			self.get_gestures (gesture_dir, gesture_type)
 
-		self.get_positions
+		self.get_positions ()
 
 
 	# Function: print_data_stats
@@ -189,13 +208,83 @@ class Gesture_Recognizer:
 	# for each gesture, this will cluster into N different 'poses'
 	def cluster_positions (self):
 
-		n_clusters = 10
+		n_components = 5
 
-		for gesture_type, positions in self.positions.items ():
+		# for gesture_type, gestures in self.gestures.items ():
+		gestures = self.gestures['u']
 
-			#--- fit a gaussian mixture model to our data ---
-			gmm = GMM(n_clusters=5, covariance_type='full')
-			gmm.fit (positions)
+
+
+		first = np.array ([[0, 1, 2, 3], [1, 0, 1, 3], [2, 1, 2, 2]])
+		second = np.array ([[0, 1, 2, 3], [1, 0, 1, 3], [2, 1, 2, 2]])
+		third = np.array ([[0, 1, 2, 3], [1, 0, 1, 3], [2, 1, 2, 2]])			
+		test_examples = np.array([first, second, third])
+
+			# print test_examples[0].shape 
+
+		#--- gaussian mixture model ---
+		positions = []
+		for position in gestures[0]:
+			positions.append (position)
+		positions = np.array (positions)
+
+
+		gmm = GMM(n_components=n_components)
+		gmm.fit (positions)
+		print gmm.predict (positions)
+
+
+
+		### Debug: print out the means ###
+		# print "##########[ --- MEANS --- ]##########"
+		# print gmm.means_
+		# print "\n\n##########[ --- Weights --- ]##########"			
+		# print gmm.weights_
+		# print "\n\n##########[ --- Covars --- ]##########"			
+		# print gmm.covars_
+
+		new_gestures = []
+		for gesture in gestures:
+			new_gesture = []
+			for i in range(len(gesture)):
+				new_gesture.append (gesture[i][:9])
+			new_gesture = np.array (new_gesture)
+			new_gestures.append (new_gesture)
+
+
+		for gesture in new_gestures:
+			print "--- reformatted gesture: ---"
+			print gesture
+
+		startprob = np.array ([0.25, 0.25, 0.25, 0.25])
+		transmat = np.array([[0.4, 0.4, 0.1, 0.1], [0.1, 0.4, 0.4, 0.1], [0.1, 0.1, 0.4, 0.4], [0.1, 0.1, 0.1, 0.7]])
+		means = gmm.means_
+		model = GaussianHMM(4, "full", startprob, transmat)
+		model.fit (new_gestures)
+
+		for i in range(len(new_gestures)):
+			print model.score (new_gestures[i])
+
+
+		# print gmm.covars_.shape
+		# model.means_ = gmm.means_
+		# model.covars_ = gmm.covars_
+
+
+
+		# trainer = hmm.HiddenMarkovModelTrainer (states=[0, 1, 2])
+		# print gestures[0]
+		# trained_model = trainer.train (gestures)
+		# print trained_model
+
+
+		# --- fit a gaussian mixture model to our data ---
+		# gaussian_hmm = GaussianHMM (n_components=2)
+		# print gaussian_hmm
+		# gaussian_hmm.fit (gestures)
+		# gaussian_hmm.predict (gestures)
+
+
 
 
 
@@ -204,6 +293,7 @@ if __name__ == "__main__":
 	gr = Gesture_Recognizer ()
 	gr.load_data ()
 	gr.print_data_stats ()
+
 	gr.cluster_positions ()
 
 
