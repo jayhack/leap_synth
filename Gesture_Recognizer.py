@@ -27,6 +27,12 @@ class Gesture_Recognizer:
 	recording_gesture = None		# the gesture we will record to.
 
 
+	#--- Training/Testing: examples ---
+	gesture_types = []
+	examples = {}				#dict mapping gesture_type -> list of examples
+
+
+
 	# Function: Constructor
 	# ---------------------
 	# currently un-used
@@ -103,6 +109,57 @@ class Gesture_Recognizer:
 
 		self.recording_gesture = None
 		num_frames_recorded = 0
+
+
+
+
+
+
+
+
+
+
+
+	########################################################################################################################
+	##############################[ --- Building Classifier --- ]###########################################################
+	########################################################################################################################
+
+	# Function: load_data
+	# -------------------
+	# loads in training examples from the data directory
+	def load_data (self):
+
+		### Step 1: get all gesture types
+		self.gesture_types = os.listdir (self.data_dir)
+
+		### Step 2: for each gesture type, initialize list of examples to empty... ###
+		for gesture_type in self.gesture_types:
+			self.examples[gesture_type] = []
+
+			### Step 3: get all the examples of that type and append to appropriate list ###
+			gesture_dir = os.path.join (self.data_dir, gesture_type)
+			example_filenames = [os.path.join (gesture_dir, f) for f in os.listdir (gesture_dir)]
+			for example_filename in example_filenames:
+
+				example_file = open(example_filename, 'r')
+				new_gesture = pickle.load (example_file)
+				example_file.close ()
+
+				self.examples[gesture_type].append (new_gesture)
+
+
+	# Function: print_data_stats
+	# --------------------------------------
+	# prints information on the loaded training examples
+	def print_data_stats (self):
+
+		print_message ("Training Example Counts: ")
+		for key, value in self.examples.items ():
+			print "	", key, ": ", len(value)
+
+
+
+
 
 
 

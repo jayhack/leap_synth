@@ -12,6 +12,7 @@
 import os
 import sys
 import select 
+import time
 
 #--- Leap ---
 sys.path.append ('/Users/jayhack/CS/NI/LeapDeveloperKit/LeapSDK/lib')
@@ -86,20 +87,24 @@ class Leap_Synth:
     # main function for all interface
     def interface_main (self):
 
+        viable_options =['r', 't', 's']
+
         ### Step 1: get their requested mode ###
-        print_message ("Would you like to record a gesture or play with the synth? (r/s)")
-        response = raw_input (">>> ")
+        print_message ("What mode would you like to enter?")
+        print " - R: record mode"
+        print " - T: train mode"
+        print " - S: synth mode"
+        response = raw_input ("---> ")
+        response = response.lower ()
+        if not response in viable_options:
+            print_error ("Main Interface Loop", "did not recognize the mode you selected")
+
+
         if response == 'r':
-            self.record_mode = True
-        elif response == 's':
-            self.record_mode = False
-        else:
-            print_error ("User Interface", "Did not recognize the option you entered")
-
-
-        if self.record_mode == True:
             while (True):
                 self.record_main ()
+        elif response == 't':
+            self.train_main ()
         else:
             while (True):
                 self.synth_main ()
@@ -155,6 +160,16 @@ class Leap_Synth:
         self.gesture_recognizer.stop_recording_gesture ()
         self.is_recording = False
 
+    # Function: train_main
+    # --------------------
+    # train the classifier 
+    def train_main (self):
+
+        ### Step 1: load in the data and print out stats about it ###
+        self.gesture_recognizer.load_data ()
+        self.gesture_recognizer.print_data_stats ()
+
+
 
 
 
@@ -166,6 +181,8 @@ def main():
 
     ### Step 1: create Leap_Synth object ###
     leap_synth = Leap_Synth ()
+    time.sleep (1)
+
 
     ### Step 2: enter main interface ###
     leap_synth.interface_main ()
