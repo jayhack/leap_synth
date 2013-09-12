@@ -8,7 +8,7 @@
 			"architecture" : "x86"
 		}
 ,
-		"rect" : [ 231.0, 44.0, 683.0, 605.0 ],
+		"rect" : [ 22.0, 44.0, 683.0, 605.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -80,7 +80,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 65.0, 203.0, 165.0, 20.0 ],
+					"patching_rect" : [ 65.0, 201.0, 165.0, 20.0 ],
 					"text" : "mxj net.udp.recv @port 7400"
 				}
 

@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # *------------------------------------------------------------ *
 # * Class: Gesture_Recognizer
 # * -------------------------
@@ -15,6 +16,9 @@ import pickle
 from common_utilities import print_message, print_error, print_status, print_inner_status
 from Gesture import Pose, Gesture
 
+#--- SKLearn ---
+import sklearn
+
 
 class Gesture_Recognizer:
 
@@ -29,7 +33,8 @@ class Gesture_Recognizer:
 
 	#--- Training/Testing: examples ---
 	gesture_types = []
-	examples = {}				#dict mapping gesture_type -> list of examples
+	gestures = {}				#dict mapping gesture_type -> list of gestures (lists of feature vectors)
+	all_positions = {}			#dict mapping gesture_type -> list of positions (feature vectors)
 
 
 
@@ -124,9 +129,37 @@ class Gesture_Recognizer:
 	##############################[ --- Building Classifier --- ]###########################################################
 	########################################################################################################################
 
+	# Function: get_gestures
+	# ----------------------
+	# given a filepath and a gesture type, this will load all the gestures from it
+	def get_gestures (self, gesture_dir, gesture_type):
+
+		self.gestures[gesture_type] = []
+		example_filenames = [os.path.join (gesture_dir, f) for f in os.listdir (gesture_dir)]
+		for example_filename in example_filenames:
+
+			example_file = open(example_filename, 'r')
+			new_gesture = pickle.load (example_file)
+			example_file.close ()
+			self.gestures[gesture_type].append (new_gesture)
+
+
+	# Function: get_positions
+	# -----------------------
+	# fills in self.positions, a dict mapping gesture types to positions (feature vectors)
+	def get_positions (self):
+
+		for gesture_type, gestures in self.gestures.items ():
+			self.positions[gesture_type] = []
+			for position in gestures:
+				self.positions[gesture_type].append(position)
+
+
+
 	# Function: load_data
 	# -------------------
 	# loads in training examples from the data directory
+	# fills self.gestures, self.positions
 	def load_data (self):
 
 		### Step 1: get all gesture types
@@ -134,28 +167,49 @@ class Gesture_Recognizer:
 
 		### Step 2: for each gesture type, initialize list of examples to empty... ###
 		for gesture_type in self.gesture_types:
-			self.examples[gesture_type] = []
 
-			### Step 3: get all the examples of that type and append to appropriate list ###
 			gesture_dir = os.path.join (self.data_dir, gesture_type)
-			example_filenames = [os.path.join (gesture_dir, f) for f in os.listdir (gesture_dir)]
-			for example_filename in example_filenames:
+			self.get_gestures (gesture_dir, gesture_type)
 
-				example_file = open(example_filename, 'r')
-				new_gesture = pickle.load (example_file)
-				example_file.close ()
-
-				self.examples[gesture_type].append (new_gesture)
+		self.get_positions
 
 
 	# Function: print_data_stats
-	# --------------------------------------
+	# --------------------------
 	# prints information on the loaded training examples
 	def print_data_stats (self):
 
 		print_message ("Training Example Counts: ")
-		for key, value in self.examples.items ():
+		for key, value in self.gestures.items ():
 			print "	", key, ": ", len(value)
+
+
+	# Function: cluster_poses
+	# -----------------------
+	# for each gesture, this will cluster into N different 'poses'
+	def cluster_positions (self):
+
+		n_clusters = 10
+
+		for gesture_type, positions in self.positions.items ():
+
+			#--- fit a gaussian mixture model to our data ---
+			gmm = GMM(n_clusters=5, covariance_type='full')
+			gmm.fit (positions)
+
+
+
+if __name__ == "__main__":
+
+	gr = Gesture_Recognizer ()
+	gr.load_data ()
+	gr.print_data_stats ()
+	gr.cluster_positions ()
+
+
+
+
+
 
 
 

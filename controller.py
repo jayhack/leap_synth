@@ -167,7 +167,10 @@ class Leap_Synth:
 
         ### Step 1: load in the data and print out stats about it ###
         self.gesture_recognizer.load_data ()
+        # self.gesture_recognizer.eliminate_second_hand ()
         self.gesture_recognizer.print_data_stats ()
+        ### Step 2: cluster the poses ###
+        self.gesture_recognizer.cluster_poses ()
 
 
 
