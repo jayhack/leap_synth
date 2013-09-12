@@ -1,25 +1,14 @@
-#!/usr/bin/python
-# *------------------------------------------------------------ *
-# * Script: leap_synth.py
-# * ---------------------
-# * script to recognize gestures from the leap motion then send
-# * them to Max MSP via the udpreceive patch.
-# *
-# *  
-# *------------------------------------------------------------ *
-
-#--- Standard ---
-import os
-import sys
-
-#--- Leap ---
-sys.path.append ('/Users/jayhack/CS/NI/LeapDeveloperKit/LeapSDK/lib')
-import Leap
-from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
 
+# Class: J_Listener
+# -----------------
+# contains all callbacks for events that occur on the leap,
+# such as receiving a new frame, etc
 class SynthListener(Leap.Listener):
+
+
     def on_init(self, controller):
+       
         print "Initialized"
 
     def on_connect(self, controller):
@@ -36,8 +25,8 @@ class SynthListener(Leap.Listener):
         print "Disconnected"
 
     def on_exit(self, controller):
+ 
         print "Exited"
-
 
 
     # Function: on_frame
@@ -134,22 +123,3 @@ class SynthListener(Leap.Listener):
 
         if state == Leap.Gesture.STATE_INVALID:
             return "STATE_INVALID"
-
-def main():
-    # Create a sample listener and controller
-    listener = SynthListener()
-    controller = Leap.Controller()
-
-    # Have the sample listener receive events from the controller
-    controller.add_listener(listener)
-
-    # Keep this process running until Enter is pressed
-    print "Press Enter to quit..."
-    sys.stdin.readline()
-
-    # Remove the sample listener when done
-    controller.remove_listener(listener)
-
-
-if __name__ == "__main__":
-    main()
