@@ -13,8 +13,8 @@
 # prints out a welcome message
 def print_welcome ():
 	print "######################################################################"
-	print "####################[ --- DANCE AUTOSYNCHRONIZER --- ]################"
-	print "####################[ - by Jay Hack, Summer 2013   - ]################"
+	print "####################[ --- Leap Synthesizer Controller --- ]###########"
+	print "####################[ -   by Jay Hack, Summer 2013      - ]###########"
 	print "######################################################################"
 	print "\n"
 

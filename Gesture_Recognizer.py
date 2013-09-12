@@ -24,7 +24,18 @@ class Gesture_Recognizer:
 	#--- Recording ---
 	is_recording = False			# boolean for wether we are recording or not
 	num_frames_recorded = False		# number of frames we have recorded so far
-	self.gesture = None				# the gesture we will record to.
+	recording_gesture = None		# the gesture we will record to.
+
+
+	# Function: Constructor
+	# ---------------------
+	# currently un-used
+	def __init__ (self):
+
+		pass
+
+
+
 
 
 	########################################################################################################################
@@ -34,7 +45,7 @@ class Gesture_Recognizer:
 	# Function: get_save_filename
 	# ---------------------------
 	# given a gesture name, this will return the path of where to save it
-	def get_save_filename (gesture_name):
+	def get_save_filename (self, gesture_name):
 
 		all_dirs = os.listdir (self.data_dir)
 
@@ -69,18 +80,29 @@ class Gesture_Recognizer:
 		self.recording_gesture = Gesture (name=gesture_name)
 
 
+	# Function: add_frame_to_recoring
+	# -------------------------------
+	# given a frame, this will add it to the recording
+	def add_frame_to_recording (self, frame):
+
+		self.recording_gesture.add_frame (frame)
+		self.num_frames_recorded = 0
+
+
 	# Function: stop_recording_gesture
 	# --------------------------------
 	# finalizes the recording process; pickles the 'gesture' object
 	# we are recording to in the appropriate location
 	def stop_recording_gesture (self):
 
-		save_filename = get_save_filename (self.gesture.name)
-		save_file = open(save_filename, 'w')
-		pickle.dump (self.gesture, save_file)
-		save_file.close ()
-		self.gesture = None
+		save_filename = self.get_save_filename (self.recording_gesture.name)
+		
+		self.recording_gesture.pickle_self (save_filename)
+
 		print_status ("Gesture Recognizer", "Saved recorded gesture at " + save_filename)
+
+		self.recording_gesture = None
+		num_frames_recorded = 0
 
 
 
