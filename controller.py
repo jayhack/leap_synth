@@ -15,43 +15,10 @@ import sys
 #--- Leap ---
 sys.path.append ('/Users/jayhack/CS/NI/LeapDeveloperKit/LeapSDK/lib')
 import Leap
-from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
-#--- Ports ---
-from socket import *
-
-
-# Function: udp_test
-# ------------------
-# tests connection to udp - try sending something to max
-# this currently works!!!
-def udp_test ():
-
-    host = 'localhost'
-    port = 7400 #2000?
-    buf = 1024
-    addr = (host, port)
-
-    UDPSock = socket(AF_INET,SOCK_DGRAM)
-
-    def_msg = '===Enter message to send to server==='
-    print def_msg
-
-    while (1):
-        data = raw_input(">> ")
-        if not data:
-            break
-        else:
-            if(UDPSock.sendto(data,addr)):
-                print "sending message: ", data
-
-
-    UDPSock.close()
-
-
-
-
-
+#--- My Files ---
+from common_utilities import print_message, print_error, print_status, print_inner_status
+from Controller_Listener import Controller_Listener
 
 
 
@@ -59,25 +26,23 @@ def udp_test ():
 # --------------
 # contains all main operation of the program
 def main():
-    # Create a sample listener and controller
-    listener = SynthListener()
-    controller = Leap.Controller()
 
-    # Have the sample listener receive events from the controller
+    ### Step 1: create the listener, controller and connect the two ###
+    listener = Controller_Listener()
+    controller = Leap.Controller()
     controller.add_listener(listener)
 
-    # Keep this process running until Enter is pressed
-    print "Press Enter to quit..."
+    ### Step 2: notify user of interface/controls ###
+    print_message ("Press <Enter> to quit")
     sys.stdin.readline()
 
-    # Remove the sample listener when done
+    ### Step 3: cleanup. (disconnect controller/listener) ###
     controller.remove_listener(listener)
 
 
 if __name__ == "__main__":
 
-
-    udp_test ()
+    main ()
 
 
 

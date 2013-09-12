@@ -1,18 +1,59 @@
+# *------------------------------------------------------------ *
+# * Class: Controller_Listener
+# * --------------------------
+# * Main class for this application; does all of the following:
+# *     - receives frames from the leap
+# *     - discerns gestures via Leap_Gesture object
+# *     - sends gesture events to Max via Max_Interface object
+# *------------------------------------------------------------ *
+#--- Standard ---
+import sys
+
+#--- Leap ---
+sys.path.append ('/Users/jayhack/CS/NI/LeapDeveloperKit/LeapSDK/lib')
+import Leap
+from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
+
+#--- My Files ---
+from common_utilities import print_message, print_error, print_status, print_inner_status
+from Max_Interface import Max_Interface
 
 
-# Class: J_Listener
-# -----------------
-# contains all callbacks for events that occur on the leap,
-# such as receiving a new frame, etc
-class SynthListener(Leap.Listener):
+
+class Controller_Listener(Leap.Listener):
+
+    #--- Member Objects ---
+    max_interface = None        # Interface w/ max
+    leap_gesture = None         # Recognition of gestures
+
+    #--- Gestures ---
+    available_gestures = ["no_hands", "one_hand", "two_hands"]     # list of available gestures
 
 
+    # Function: Constructor
+    # ---------------------
+    # creates max_interface and leap_gesture
     def on_init(self, controller):
        
-        print "Initialized"
+        ### Step 1: create max interface ###
+        self.max_interface = Max_Interface ()
 
+        ### Step 2: notify of initialization ###
+        print_status ("Controller Listener", "controller initialized")
+
+
+
+    ########################################################################################################################
+    ##############################[ --- Initialization/Finalization --- ]###################################################
+    ########################################################################################################################        
+
+
+    # Function: on_connect
+    # --------------------
+    # callback function for when the controller is connected
     def on_connect(self, controller):
-        print "Connected"
+
+        print_status ("Controller Listener", "controller connected")
 
         # Enable gestures
         controller.enable_gesture(Leap.Gesture.TYPE_CIRCLE);
@@ -20,13 +61,36 @@ class SynthListener(Leap.Listener):
         controller.enable_gesture(Leap.Gesture.TYPE_SCREEN_TAP);
         controller.enable_gesture(Leap.Gesture.TYPE_SWIPE);
 
+    # Function: on_disconnect
+    # -----------------------
+    # callback function for when the controller is disconnected
     def on_disconnect(self, controller):
-        # Note: not dispatched when running in a debugger.
-        print "Disconnected"
 
+        print_status ("Controller Listener", "Controller disconnected")
+
+
+    # Function: on_exit
+    # -----------------
+    # callback function for exit of the program
     def on_exit(self, controller):
  
-        print "Exited"
+        print_status ("Controller Listener", "Exiting")
+
+
+
+
+
+    ########################################################################################################################
+    ##############################[ --- Frame Processing --- ]##############################################################
+    ########################################################################################################################        
+
+    # Function: print_frame
+    # ---------------------
+    # prints a user-readable format of the current frame
+    def print_frame (self, frame):
+
+        print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tools: %d, gestures: %d" % (
+              frame.id, frame.timestamp, len(frame.hands), len(frame.fingers), len(frame.tools), len(frame.gestures()))
 
 
     # Function: on_frame
@@ -34,11 +98,16 @@ class SynthListener(Leap.Listener):
     # this function is called for every frame that is observed from the leap.
     def on_frame(self, controller):
 
-
         frame = controller.frame()
 
-        print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tools: %d, gestures: %d" % (
-              frame.id, frame.timestamp, len(frame.hands), len(frame.fingers), len(frame.tools), len(frame.gestures()))
+        if len(frame.hands) == 0:
+            self.max_interface.send_gesture ("no_hands")
+        elif len(frame.hands) == 1:
+            self.max_interface.send_gesture ("one_hand")
+        elif len(frame.hands) == 2:
+            self.max_interface.send_gesture ("two_hands")
+
+        self.print_frame (frame)
 
         if not frame.hands.is_empty:
             # Get the first hand
@@ -110,6 +179,8 @@ class SynthListener(Leap.Listener):
 
         if not (frame.hands.is_empty and frame.gestures().is_empty):
             print ""
+
+
 
     def state_string(self, state):
         if state == Leap.Gesture.STATE_START:

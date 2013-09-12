@@ -8,6 +8,9 @@
 #--- UDP ---
 from socket import *
 
+#--- My Files ---
+from common_utilities import print_message, print_error, print_status, print_inner_status
+
 class Max_Interface:
 
 	#--- Interface/Protocol Parameters ---
@@ -17,17 +20,23 @@ class Max_Interface:
 	addr = (host, port)
 
 	#--- Objects for Communication ---
-	self.available_gestures = None
 	UDPSock = None
 
 
 	# Function: Constructor
 	# ---------------------
 	# binds to the correct port, initializes 'available_gestures'
-	def __init__ (self, available_gestures):
+	def __init__ (self):
 
 		### Step 1: create socket ###
 		self.UDPSock = socket (AF_INET, SOCK_DGRAM)
+
+	# Function: Destructor 
+	# --------------------
+	# closes self.UDPSock
+	def __del__ (self):
+		
+		self.UDPSock.close ()
 
 
 	# Function: send_gesture
@@ -35,44 +44,13 @@ class Max_Interface:
 	# notifies max of the occurence of a given gesture
 	def send_gesture (self, gesture):
 
-		### Step 1: ensure the gesture exists ###
-		if not gesture in self.available_gestures:
-			print_error ("Max_Interface (Send Gesture)", "The Gesture " + str(gesture) + " apparently doesn't exist")
-
-		### Step 2: send it via UDP to max ###
-		gesture_index = self.available_gestures.index (gesture)
-		if (UDPSock.sendto(gesture_index, self.addr)):
-			print_status ("Max_Interface (Send Gesture)", "Sent gesture " + str(gesture))
-		
+		### Step 1: send it via UDP to max ###
+		if (self.UDPSock.sendto(gesture, self.addr)):
+			print_inner_status ("Max_Interface (Send Gesture)", "Sent gesture " + str(gesture))
+		else:
+			print_error ("Max Interface", "Failed to send gesture", str(gesture), " to Max")
 
 
 
-
-# Function: udp_test
-# ------------------
-# tests connection to udp - try sending something to max
-# this currently works!!!
-def udp_test ():
-
-    host = 'localhost'
-    port = 7400 #2000?
-    buf = 1024
-    addr = (host, port)
-
-    UDPSock = socket(AF_INET,SOCK_DGRAM)
-
-    def_msg = '===Enter message to send to server==='
-    print def_msg
-
-    while (1):
-        data = raw_input(">> ")
-        if not data:
-            break
-        else:
-            if(UDPSock.sendto(data,addr)):
-                print "sending message: ", data
-
-
-    UDPSock.close()
 
 
