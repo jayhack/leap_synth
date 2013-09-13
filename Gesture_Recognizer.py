@@ -34,6 +34,7 @@ class Gesture_Recognizer:
 	app_name = 'basketball'
 	data_dir = os.path.join (os.getcwd(), 'data/' + app_name)
 	classifiers_dir = os.path.join (os.getcwd (), 'classifiers/' + app_name)
+	classifier_filename = os.path.join(classifiers_dir, 'classifier.pkl')
 
 
 	#--- Recording ---
@@ -165,14 +166,15 @@ class Gesture_Recognizer:
 			new_gesture = pickle.load (example_file)
 			example_file.close ()
 
+
 			### Step 2: convert to np.array ###
 			new_gesture = np.array (new_gesture)
 			shortened_gesture = []
 			for position in new_gesture:
-				p = [float(e) for e in position]
-				shortened_gesture.append (p[2:4])
-
+				p = np.array([float(e) for e in position])
+				shortened_gesture.append (p[1:])
 			shortened_gesture = np.array (shortened_gesture)
+
 
 			### Step 3: add to the list of gestures ###
 			self.gestures[gesture_type].append (shortened_gesture)
@@ -226,37 +228,41 @@ class Gesture_Recognizer:
 	# trains the Gaussian HMM and saves it
 	def train_model (self):
 
-		n_components = 5
+		n_components = 10
 
 		for gesture_type, gestures in self.gestures.items ():
 			
+			for index, gesture in enumerate(gestures):
+				print "--- Gesture (", index, ", ", gesture_type, ") ---"
+				print gesture, "\n"
+
 			model = GaussianHMM (n_components)
-			model.fit (gestures[:4])
+			model.fit (gestures)
 
 			self.hmms[gesture_type] = model
 
-		pickle.dump (self.hmms, open(os.path.join(self.classifiers_dir, 'classifier.pkl', 'w')))
+		self.save_model ()
 
 	# Function: load_model
 	# --------------------
 	# loads the model from a pickled file
 	def load_model (self):
 
-		self.hmms = pickle.load (open(os.path.join(self.classifiers_dir, 'classifier.pkl'), 'r'))
+		self.hmms = pickle.load (open(self.classifier_filename, 'r'))
 
 	# Function: save_model
 	# --------------------
 	# loads the model from a pickled file
-	def load_model (self):
+	def save_model (self):
 
-		pickle.dump (self.hmms, open(os.path.join(self.classifiers_dir, 'classifier.pkl', 'w')))
+		pickle.dump (self.hmms, open(self.classifier_filename, 'w'))
 
 
 	# Function: get_scores
 	# --------------------------
 	# given a gesture, this will return a sorted list of (label, score). does not
 	# threshold or anything
-	def get_scores (gesture):
+	def get_scores (self, gesture):
 
 		scores = [(gesture_type, hmm.score (gesture)) for gesture_type, hmm in self.hmms.items()]
 		scores = sorted (scores, key=itemgetter(1), reverse=True)
@@ -265,22 +271,32 @@ class Gesture_Recognizer:
 		for score in scores:
 			print "	- ", score[0], ": ", score[1]
 
+		return scores
 
 	# Function: classify_gesture
 	# --------------------------
 	# returns the name of a gesture if it works, 'none' otherwise
-	def classify_gesture (gesture):
+	def classify_gesture (self, new_gesture):
 
 		print_message ("Classify Gesture:")
 
-		threshold = -3000.0
+		threshold = -4000.0
 
-		scores = get_scores (gesture)
+
+		### Step 2: convert to np.array ###
+		new_gesture = np.array (new_gesture)
+		shortened_gesture = []
+		for position in new_gesture:
+			p = np.array([float(e) for e in position])
+			shortened_gesture.append (p[1:])
+		shortened_gesture = np.array (shortened_gesture)
+
+		scores = self.get_scores (shortened_gesture)
 		return_val = None
 		if scores[0][1] > threshold:
 			return_val =  scores[0][0]
 
-		print_message ("Classification: ", str(return_val))
+		print_message ("Classification: " + str(return_val))
 
 
 

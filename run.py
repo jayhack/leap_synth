@@ -22,6 +22,7 @@ import Leap
 from common_utilities import print_welcome, print_message, print_error, print_status, print_inner_status
 from Synth_Listener import Synth_Listener
 from Max_Interface import Max_Interface
+from Gesture import Pose
 from Gesture_Recognizer import Gesture_Recognizer
 
 
@@ -147,8 +148,8 @@ class Leap_Synth:
     def record_gesture (self):
 
         num_examples_recorded = 0
-        max_examples = 20
-        frames_per_example = 100
+        max_examples = 10
+        frames_per_example = 70
 
         ### Step 1: have them name the gesture ###
         print_message ("What is this gesture called?")
@@ -204,6 +205,8 @@ class Leap_Synth:
     # records discrete gestures and classifies them for you.
     def synth_main (self):
 
+        self.gesture_recognizer.load_model ()
+
         print_message ("Recording Discrete events")
         while (True):
 
@@ -215,7 +218,7 @@ class Leap_Synth:
 
             ### Step 3: fill it with frames ###
             num_frames_recorded = 0
-            while (num_frames_recorded < 100):
+            while (num_frames_recorded < 70):
                 frame = self.get_frame ()
                 pose = Pose(frame)
                 observed_gesture.append (pose.features)
@@ -224,7 +227,7 @@ class Leap_Synth:
 
             ### Step 4: stop the recording and classify ###
             print_message ("### Recording Complete ###")
-            self.gesture_recognizer.classify_gesture ("")
+            self.gesture_recognizer.classify_gesture (observed_gesture)
 
             print_message("enter to continue")
             sys.stdin.readline ()

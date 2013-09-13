@@ -16,6 +16,8 @@ import Leap
 #--- My Files ---
 from common_utilities import print_message, print_status
 
+#--- Numpy ---
+import numpy as np
 
 # Class: Pose 
 # -----------
@@ -77,36 +79,36 @@ class Pose:
 	# Function: get_hand_features 
 	# ---------------------------
 	# given a hand, returns all features on it
+	# this will be 10 total
 	def get_hand_features (self, hand):
 
 		hand_features = []
-		num_features = 10
 
-		### Step 1: if the hand doesn't exist, return all zeros ###
-		if not hand:
-			return [0] * 10
-
-		#---------- PALM ----------
+		#---------- PALM: 3 features total ----------
 		normal = hand.palm_normal
 		direction = hand.direction
-
-		#--- Yaw/Pitch/Roll: 3 features total ---
+		#--- Yaw/Pitch/Roll ---
 		normal = hand.palm_normal
 		direction = hand.direction 
-		hand_features.append (direction.yaw)
-		hand_features.append (direction.pitch)
-		hand_features.append (normal.roll)
+		hand_features.append (float(direction.yaw))
+		hand_features.append (float(direction.pitch))
+		hand_features.append (float(normal.roll))
 
 
-		#---------- FINGERS ----------
+		#---------- FINGERS: 7 features total ----------
 		fingers = hand.fingers
-		hand_features.append (len(fingers))	#number of fingers
-
-		#--- Finger position average/variance: 6 features total ---
-		finger_position_avg			= self.get_finger_position_avg (fingers)
-		finger_position_var 		= self.get_finger_position_var (fingers, finger_position_avg)
-		hand_features += (finger_position_avg)
-		hand_features += (finger_position_var)
+		#--- Number of Fingers ---
+		num_fingers = float(len(fingers))
+		hand_features.append (num_fingers)
+		#--- Finger position average/variance ---
+		if num_fingers > 0.0:
+			finger_position_avg			= self.get_finger_position_avg (fingers)
+			finger_position_var 		= self.get_finger_position_var (fingers, finger_position_avg)
+			hand_features += finger_position_avg
+			hand_features += finger_position_var
+		else:
+			hand_features += [0.0, 0.0, 0.0]
+			hand_features += [0.0, 0.0, 0.0]
 		
 		return hand_features
 
@@ -115,29 +117,31 @@ class Pose:
 	# --------------------------
 	# computes a representation of this pose as an n-dim vector,
 	# stores that in self.features
+	# initially the features are just a list, then get passed back as 
+	# a numpy array
 	def compute_features (self):
 
-		num_features = 21
+
+		num_hand_features = 10
+		num_features = num_hand_features + 1
 		self.features = []
 
 		### Step 1: ensure there are actually hands; if not, this vector is zeros ###
 		hands = self.frame.hands
-		num_hands = len(self.frame.hands)
+		num_hands = float(len(self.frame.hands))
 
-		### Step 2: put in features for both hands ###
+		#--- Feature 1: number of hands visible ---
+		self.features.append (num_hands)
+
+		#--- Append hand features ---
 		if num_hands == 0:
-			[0] * num_features
-		elif num_hands == 1:
-			self.features.append (1)							#number of hands
+			self.features += [0.0] * num_hand_features
+		else:
 			self.features += self.get_hand_features (hands[0])
-			self.features += [0] * 10
-		elif num_hands == 2:
-			self.features.append (2)							#number of hands
-			self.features += self.get_hand_features (hands[0])
-			self.features += self.get_hand_features (hands[1])
 
+		self.features = np.array (self.features)
 
-		# print self.features
+		print self.features
 
 
 
