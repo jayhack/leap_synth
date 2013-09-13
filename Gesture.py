@@ -126,7 +126,7 @@ def compute_features (cur_frame, prev_frame):
 
 	#--- Append hand features ---
 	if cur_num_hands == 0:
-		features = [0.0] * num_hand_features
+		features = [5000.0] * num_hand_features
 	else:
 
 		### if there was no hand in the previous frame, pass in the hand from the current frame instead - velocity of 0 ###
