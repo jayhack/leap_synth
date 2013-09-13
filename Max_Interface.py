@@ -42,13 +42,13 @@ class Max_Interface:
 	# Function: send_gesture
 	# ----------------------
 	# notifies max of the occurence of a given gesture
-	def send_gesture (self, gesture):
+	def send_message (self, message):
 
 		### Step 1: send it via UDP to max ###
-		if (self.UDPSock.sendto(gesture, self.addr)):
-			print_inner_status ("Max_Interface (Send Gesture)", "Sent gesture " + str(gesture))
+		if (self.UDPSock.sendto(message, self.addr)):
+			print_inner_status ("Max_Interface (Send Gesture)", "Sent gesture " + str(message))
 		else:
-			print_error ("Max Interface", "Failed to send gesture", str(gesture), " to Max")
+			print_error ("Max Interface", "Failed to send gesture", str(message), " to Max")
 
 
 

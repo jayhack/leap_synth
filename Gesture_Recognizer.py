@@ -249,9 +249,9 @@ class Gesture_Recognizer:
 		scores = [(gesture_type, hmm.score (gesture)) for gesture_type, hmm in self.hmms.items()]
 		scores = sorted (scores, key=itemgetter(1), reverse=True)
 
-		print "--- Classification Outcome ---"
-		for score in scores:
-			print "	- ", score[0], ": ", score[1]
+		# print "--- Classification Outcome ---"
+		# for score in scores:
+			# print "	- ", score[0], ": ", score[1]
 
 		return scores
 
@@ -260,7 +260,7 @@ class Gesture_Recognizer:
 	# returns the name of a gesture if it works, 'none' otherwise
 	def classify_gesture (self, new_gesture):
 
-		print_message ("Classify Gesture:")
+		# print_message ("Classify Gesture:")
 
 		threshold = -4000.0
 
@@ -277,7 +277,7 @@ class Gesture_Recognizer:
 			print gesture
 			return_val =  scores[0][0]
 
-		print_message ("Classification: " + str(return_val))
+		# print_message ("Classification: " + str(return_val))
 		return return_val
 
 

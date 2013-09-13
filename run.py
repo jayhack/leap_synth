@@ -114,7 +114,7 @@ class Leap_Synth:
             self.train_main ()
         else:
             while (True):
-                self.synth_main_discrete ()
+                self.synth_main ()
 
 
     # Function: record_main
@@ -257,7 +257,6 @@ class Leap_Synth:
 
             ### --- add the current frame --- ###
             frame = self.get_frame ()
-            print_status ("Synth Main", "frame")
             observed_gesture.add_frame (frame)
 
             ### --- pop off the last frame and classify if we are over 70 --- ###
@@ -266,8 +265,11 @@ class Leap_Synth:
                 observed_gesture.pop_oldest_frame ()
                 classification_results = self.gesture_recognizer.classify_gesture (observed_gesture.O)
                 if classification_results:
+                    
                     print_message ("--- RECEIVED GESTURE: " + str(classification_results))
-                    time.sleep (1)
+                    self.max_interface.send_message (str(classification_results))
+
+                    time.sleep (2)
 
             num_frames += 1
 
