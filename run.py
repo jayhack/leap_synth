@@ -114,7 +114,7 @@ class Leap_Synth:
             self.train_main ()
         else:
             while (True):
-                self.synth_main ()
+                self.synth_main_discrete ()
 
 
     # Function: record_main
@@ -210,10 +210,10 @@ class Leap_Synth:
     ##############################[ --- Synth Main --- ]####################################################################
     ########################################################################################################################
 
-    # Function: synth_main
+    # Function: synth_main_disrcete
     # --------------------
     # records discrete gestures and classifies them for you.
-    def synth_main (self):
+    def synth_main_discrete (self):
 
         self.gesture_recognizer.load_model ()
 
@@ -239,6 +239,41 @@ class Leap_Synth:
 
             print_message("enter to continue")
             sys.stdin.readline ()
+
+
+    # Function: synth_main
+    # --------------------
+    # maintains a 70-frame gesture and tries to classify it
+    def synth_main (self):
+
+        ### Step 1: setup ###
+        self.gesture_recognizer.load_model ()
+        print_message ("Entering Main Loop: Continuous Gesture Recognition")
+        observed_gesture = Gesture ()
+        num_frames = 0
+
+        ### Step 2: enter main loop ###
+        while (True):
+
+            ### --- add the current frame --- ###
+            frame = self.get_frame ()
+            print_status ("Synth Main", "frame")
+            observed_gesture.add_frame (frame)
+
+            ### --- pop off the last frame and classify if we are over 70 --- ###
+            if num_frames > 70:
+
+                observed_gesture.pop_oldest_frame ()
+                classification_results = self.gesture_recognizer.classify_gesture (observed_gesture.O)
+                if classification_results:
+                    print_message ("--- RECEIVED GESTURE: " + str(classification_results))
+                    time.sleep (1)
+
+            num_frames += 1
+
+
+
+
 
 
 

@@ -126,7 +126,7 @@ def compute_features (cur_frame, prev_frame):
 
 	#--- Append hand features ---
 	if cur_num_hands == 0:
-		features += [0.0]*num_hand_features
+		features = [0.0] * num_hand_features
 	else:
 
 		### if there was no hand in the previous frame, pass in the hand from the current frame instead - velocity of 0 ###
@@ -177,9 +177,17 @@ class Gesture:
 			self.prev_frame = frame
 
 		features = compute_features (frame, self.prev_frame)
-		print features
 		self.O.append (features)
 		self.prev_frame = frame
+
+
+
+	# Function: pop_oldest_frame
+	# --------------------------
+	# pops off the oldest frame contained in this gesture
+	def pop_oldest_frame (self):
+
+		self.O.pop(0)
 
 
 	# Function: pickle_self

@@ -274,9 +274,11 @@ class Gesture_Recognizer:
 		scores = self.get_scores (gesture)
 		return_val = None
 		if scores[0][1] > threshold:
+			print gesture
 			return_val =  scores[0][0]
 
 		print_message ("Classification: " + str(return_val))
+		return return_val
 
 
 
