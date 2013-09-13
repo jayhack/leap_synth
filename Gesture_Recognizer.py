@@ -16,7 +16,7 @@ from operator import itemgetter
 #--- My Files ---
 sys.path.append ('/Users/jayhack/anaconda/lib/python2.7/site-packages/scipy/')
 from common_utilities import print_message, print_error, print_status, print_inner_status
-from Gesture import Pose, Gesture
+from Gesture import Gesture
 
 #--- SKLearn ---
 import numpy as np
@@ -110,7 +110,7 @@ class Gesture_Recognizer:
 		self.is_recording = True
 		self.num_frames_recorded = 0
 		self.recording_gesture = Gesture (name=gesture_name)
-		print_message ("starting number of frames: " + str(len(self.recording_gesture.poses)))
+		print_message ("starting number of frames: " + str(len(self.recording_gesture.O)))
 
 
 	# Function: add_frame_to_recoring
@@ -132,7 +132,7 @@ class Gesture_Recognizer:
 		save_filename = self.get_save_filename (self.recording_gesture.name)
 		self.recording_gesture.pickle_self (save_filename)
 		print_status ("Gesture Recognizer", "Saved recorded gesture at " + save_filename)
-		print_inner_status ("Final # of frames", str(len(self.recording_gesture.poses)))
+		print_inner_status ("Final # of frames", str(len(self.recording_gesture.O)))
 
 		### Step 2: clear out our recording gesture ###
 		del self.recording_gesture
@@ -163,21 +163,11 @@ class Gesture_Recognizer:
 
 			### Step 1: load in the raw list of positions = 'gesture' ###
 			example_file = open(example_filename, 'r')
-			new_gesture = pickle.load (example_file)
+			new_gesture = np.array(pickle.load (example_file))
 			example_file.close ()
 
-
-			### Step 2: convert to np.array ###
-			new_gesture = np.array (new_gesture)
-			shortened_gesture = []
-			for position in new_gesture:
-				p = np.array([float(e) for e in position])
-				shortened_gesture.append (p[1:])
-			shortened_gesture = np.array (shortened_gesture)
-
-
 			### Step 3: add to the list of gestures ###
-			self.gestures[gesture_type].append (shortened_gesture)
+			self.gestures[gesture_type].append (new_gesture)
 
 
 	# Function: get_positions
@@ -257,7 +247,6 @@ class Gesture_Recognizer:
 
 		pickle.dump (self.hmms, open(self.classifier_filename, 'w'))
 
-
 	# Function: get_scores
 	# --------------------------
 	# given a gesture, this will return a sorted list of (label, score). does not
@@ -285,13 +274,8 @@ class Gesture_Recognizer:
 
 		### Step 2: convert to np.array ###
 		new_gesture = np.array (new_gesture)
-		shortened_gesture = []
-		for position in new_gesture:
-			p = np.array([float(e) for e in position])
-			shortened_gesture.append (p[1:])
-		shortened_gesture = np.array (shortened_gesture)
 
-		scores = self.get_scores (shortened_gesture)
+		scores = self.get_scores (new_gesture)
 		return_val = None
 		if scores[0][1] > threshold:
 			return_val =  scores[0][0]
