@@ -46,7 +46,6 @@ class Gesture_Recognizer:
 	#--- Training/Testing: examples ---
 	gesture_types = []
 	gestures = {}			#dict mapping gesture_type -> list of gestures (lists of feature vectors)
-	positions = {}			#dict mapping gesture_type -> list of positions (feature vectors)
 
 	#--- Classification: Gaussian HMMS ---
 	hmms = {}				#dict mapping gesture_type -> hmm
@@ -124,9 +123,15 @@ class Gesture_Recognizer:
 
 	# Function: stop_recording_gesture
 	# --------------------------------
-	# finalizes the recording process; pickles the 'gesture' object
-	# we are recording to in the appropriate location
+	# finalizes the recording process.
 	def stop_recording_gesture (self):
+
+		self.num_frames_recorded = 0
+
+	# Function: save_gesture 
+	# ----------------------
+	# pickles the gesture
+	def save_gesture (self):
 
 		### Step 1: save the gesture ###
 		save_filename = self.get_save_filename (self.recording_gesture.name)
@@ -137,7 +142,6 @@ class Gesture_Recognizer:
 		### Step 2: clear out our recording gesture ###
 		del self.recording_gesture
 		self.num_frames_recorded = 0
-
 
 
 
@@ -164,22 +168,14 @@ class Gesture_Recognizer:
 			### Step 1: load in the raw list of positions = 'gesture' ###
 			example_file = open(example_filename, 'r')
 			new_gesture = np.array(pickle.load (example_file))
+			gesture = []
+			for position in new_gesture:
+				gesture.append (np.array(position[:-3])) 
+			gesture = np.array(gesture)
 			example_file.close ()
 
 			### Step 3: add to the list of gestures ###
-			self.gestures[gesture_type].append (new_gesture)
-
-
-	# Function: get_positions
-	# -----------------------
-	# fills in self.positions, a dict mapping gesture types to positions (feature vectors)
-	def get_positions (self):
-
-		for gesture_type, gestures in self.gestures.items ():
-			self.positions[gesture_type] = []
-			for gesture in gestures:
-				for position in gesture:
-					self.positions[gesture_type].append(np.array(position))
+			self.gestures[gesture_type].append (gesture)
 
 
 	# Function: load_data
@@ -199,9 +195,6 @@ class Gesture_Recognizer:
 			print_inner_status ("Gesture Recognizer (Load Data)", "Loading " + str(gesture_dir))
 
 			self.get_gestures (gesture_dir, gesture_type)
-
-		self.get_positions ()
-
 
 	# Function: print_data_stats
 	# --------------------------
@@ -271,11 +264,14 @@ class Gesture_Recognizer:
 
 		threshold = -4000.0
 
-
 		### Step 2: convert to np.array ###
 		new_gesture = np.array (new_gesture)
+		gesture = []
+		for position in new_gesture:
+			gesture.append (np.array(position[:-3])) 
+		gesture = np.array(gesture)
 
-		scores = self.get_scores (new_gesture)
+		scores = self.get_scores (gesture)
 		return_val = None
 		if scores[0][1] > threshold:
 			return_val =  scores[0][0]

@@ -60,22 +60,33 @@ def get_finger_position_var (fingers, finger_position_avg):
 # ---------------------------
 # given a hand, returns all features on it
 # this will be 10 total
-def get_hand_features (hand):
+def get_hand_features (hand, prev_hand):
 
 	hand_features = []
 
-	#---------- PALM: 6 features total ----------
+	#---------- PALM: 12 features total ----------
 	#--- Position ---
 	position = hand.palm_position
-	hand_features.append (float(hand.palm_position[0]))
-	hand_features.append (float(hand.palm_position[1]))
-	hand_features.append (float(hand.palm_position[2]))
+	hand_features.append (float(position[0]))
+	hand_features.append (float(position[1]))
+	hand_features.append (float(position[2]))
+	#--- Velocity ---
+	prev_position = prev_hand.palm_position
+	hand_features.append (float(position[0] - prev_position[0]))
+	hand_features.append (float(position[1] - prev_position[1]))
+	hand_features.append (float(position[2] - prev_position[2]))		
 	#--- Yaw/Pitch/Roll ---
-	normal = hand.palm_normal
 	direction = hand.direction 
+	normal = hand.palm_normal	
 	hand_features.append (float(direction.yaw))
 	hand_features.append (float(direction.pitch))
 	hand_features.append (float(normal.roll))
+	#--- Change in Yaw/Pitch/Roll ---
+	prev_direction = prev_hand.direction
+	prev_normal = prev_hand.palm_normal	
+	hand_features.append (float(direction.yaw - prev_direction.yaw))
+	hand_features.append (float(direction.pitch - prev_direction.pitch))
+	hand_features.append (float(normal.roll - prev_normal.roll))
 
 
 	#---------- FINGERS: 7 features total ----------
@@ -102,20 +113,27 @@ def get_hand_features (hand):
 # stores that in features
 # initially the features are just a list, then get passed back as 
 # a numpy array
-def compute_features (cur_frame):
+def compute_features (cur_frame, prev_frame):
 
-	num_hand_features = 13
+	num_hand_features = 19
 	features = []
 
 	### Step 1: ensure there are actually hands; if not, this vector is zeros ###
-	hands = cur_frame.hands
-	num_hands = float(len(cur_frame.hands))
+	cur_hands = cur_frame.hands
+	prev_hands = prev_frame.hands
+	cur_num_hands = float(len(cur_frame.hands))
+	prev_num_hands = float (len(prev_frame.hands))
 
 	#--- Append hand features ---
-	if num_hands == 0:
+	if cur_num_hands == 0:
 		features += [0.0]*num_hand_features
 	else:
-		features += get_hand_features (hands[0])
+
+		### if there was no hand in the previous frame, pass in the hand from the current frame instead - velocity of 0 ###
+		if prev_num_hands == 0:
+			features += get_hand_features (cur_hands[0], cur_hands[0])
+		else:
+			features += get_hand_features (cur_hands[0], prev_hands[0])
 
 	features = np.array (features)
 	return features
@@ -133,6 +151,8 @@ def compute_features (cur_frame):
 class Gesture:
 
 	#--- Data ---
+	frame = None
+	prev_frame = None
 	name = '__UNCLASSIFIED__'
 	O = []			#	Observations	(list of frames)
 
@@ -153,9 +173,13 @@ class Gesture:
 	# takes in a Leap frame object and adds to the current gesture
 	def add_frame (self, frame):
 
-		features = compute_features (frame)
+		if not self.prev_frame:
+			self.prev_frame = frame
+
+		features = compute_features (frame, self.prev_frame)
 		print features
 		self.O.append (features)
+		self.prev_frame = frame
 
 
 	# Function: pickle_self

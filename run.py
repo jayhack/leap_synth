@@ -22,7 +22,7 @@ import Leap
 from common_utilities import print_welcome, print_message, print_error, print_status, print_inner_status
 from Synth_Listener import Synth_Listener
 from Max_Interface import Max_Interface
-from Gesture import compute_features 
+from Gesture import Gesture, compute_features
 from Gesture_Recognizer import Gesture_Recognizer
 
 
@@ -79,6 +79,12 @@ class Leap_Synth:
 
 
 
+
+
+
+
+
+
     ########################################################################################################################
     ##############################[ --- User Interface --- ]################################################################
     ########################################################################################################################
@@ -118,7 +124,7 @@ class Leap_Synth:
 
         while (True):
             print_message ("What would you like to do?")
-            print " - R: record a new gesture (enter name of gesture)"
+            print " - R: record a new gesture"
             print " - Q: quit"
             response = raw_input ("---> ")
             response = response.lower ()
@@ -174,6 +180,7 @@ class Leap_Synth:
             ### Step 4: stop the recording ###
             print_message ("### Recording Complete ###")
             self.gesture_recognizer.stop_recording_gesture ()
+            self.gesture_recognizer.save_gesture ()
             self.is_recording = False
             num_examples_recorded += 1
 
@@ -196,6 +203,9 @@ class Leap_Synth:
 
 
 
+
+
+
     ########################################################################################################################
     ##############################[ --- Synth Main --- ]####################################################################
     ########################################################################################################################
@@ -211,7 +221,7 @@ class Leap_Synth:
         while (True):
 
             ### Step 1: initialize the gesture ###
-            observed_gesture = []
+            observed_gesture = Gesture ()
 
             ### Step 2: start the recording ###
             self.record_countdown ()
@@ -219,15 +229,13 @@ class Leap_Synth:
             ### Step 3: fill it with frames ###
             num_frames_recorded = 0
             while (num_frames_recorded < 70):
-                frame = self.get_frame ()
-                
-                observed_gesture.append (compute_features (frame))
+                frame = self.get_frame ()                
+                observed_gesture.add_frame (frame)
                 num_frames_recorded += 1
-
 
             ### Step 4: stop the recording and classify ###
             print_message ("### Recording Complete ###")
-            self.gesture_recognizer.classify_gesture (observed_gesture)
+            self.gesture_recognizer.classify_gesture (observed_gesture.O)
 
             print_message("enter to continue")
             sys.stdin.readline ()
