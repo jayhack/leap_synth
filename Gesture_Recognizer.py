@@ -31,7 +31,10 @@ from nltk.tag import hmm
 class Gesture_Recognizer:
 
 	#--- Filenames ---
-	data_dir = os.path.join (os.getcwd(), 'data/basketball')
+	app_name = 'basketball'
+	data_dir = os.path.join (os.getcwd(), 'data/' + app_name)
+	classifiers_dir = os.path.join (os.getcwd (), 'classifiers/' + app_name)
+
 
 	#--- Recording ---
 	is_recording = False			# boolean for wether we are recording or not
@@ -51,13 +54,19 @@ class Gesture_Recognizer:
 
 	# Function: Constructor
 	# ---------------------
-	# currently un-used
+	# load data and train model
 	def __init__ (self):
 
+		# ### Step 1: load in data ###
+		# print_status ("Gesture Recognizer (Init)", "Loading Data")
+		# self.load_data ()
+
+		# ### Step 2: train the classifier ###
+		# print_status ("Gesture Recognizer (Init)", "Training Model")
+		# self.train_model ()
+		# print_status ("Gesture_Recognizer (Init)", "Init complete")
+
 		pass
-
-
-
 
 
 	########################################################################################################################
@@ -158,7 +167,7 @@ class Gesture_Recognizer:
 			new_gesture = np.array (new_gesture)
 			shortened_gesture = []
 			for position in new_gesture:
-				shortened_gesture.append (position[:11])
+				shortened_gesture.append (position[:3])
 			shortened_gesture = np.array (shortened_gesture)
 
 			### Step 3: add to the list of gestures ###
@@ -190,6 +199,9 @@ class Gesture_Recognizer:
 		for gesture_type in self.gesture_types:
 
 			gesture_dir = os.path.join (self.data_dir, gesture_type)
+
+			print_inner_status ("Gesture Recognizer (Load Data)", "Loading " + str(gesture_dir))
+
 			self.get_gestures (gesture_dir, gesture_type)
 
 		self.get_positions ()
@@ -206,18 +218,34 @@ class Gesture_Recognizer:
 
 
 	# Function: train_model
-	# -----------------------
-	# for each gesture, this will cluster into N different 'poses'
+	# ---------------------
+	# trains the Gaussian HMM and saves it
 	def train_model (self):
 
-		n_components = 10
+		n_components = 5
 
 		for gesture_type, gestures in self.gestures.items ():
 			
 			model = GaussianHMM (n_components)
-			model.fit (gestures)
+			model.fit (gestures[:4])
 
 			self.hmms[gesture_type] = model
+
+		pickle.dump (self.hmms, open(os.path.join(self.classifiers_dir, 'classifier.pkl', 'w')))
+
+	# Function: load_model
+	# --------------------
+	# loads the model from a pickled file
+	def load_model (self):
+
+		self.hmms = pickle.load (open(os.path.join(self.classifiers_dir, 'classifier.pkl'), 'r'))
+
+	# Function: save_model
+	# --------------------
+	# loads the model from a pickled file
+	def load_model (self):
+
+		pickle.dump (self.hmms, open(os.path.join(self.classifiers_dir, 'classifier.pkl', 'w')))
 
 
 	# Function: get_scores
@@ -239,14 +267,16 @@ class Gesture_Recognizer:
 	# returns the name of a gesture if it works, 'none' otherwise
 	def classify_gesture (gesture):
 
+		print_message ("Classify Gesture:")
+
 		threshold = -3000.0
 
 		scores = get_scores (gesture)
+		return_val = None
 		if scores[0][1] > threshold:
-			return scores[0][0]
-		else:
-			return None
+			return_val =  scores[0][0]
 
+		print_message ("Classification: ", str(return_val))
 
 
 

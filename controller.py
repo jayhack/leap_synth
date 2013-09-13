@@ -110,14 +110,6 @@ class Leap_Synth:
                 self.synth_main ()
 
 
-    # Function: synth_main
-    # --------------------
-    # contains everything involving the synth...
-    def synth_main (self):
-
-        pass
-
-
     # Function: record_main
     # ---------------------
     # interface for recording gestures
@@ -191,13 +183,51 @@ class Leap_Synth:
     def train_main (self):
 
         ### Step 1: load in the data and print out stats about it ###
+        print_status ("Gesture_Recognizer", "Loading Data")
         self.gesture_recognizer.load_data ()
         # self.gesture_recognizer.eliminate_second_hand ()
         self.gesture_recognizer.print_data_stats ()
         ### Step 2: cluster the poses ###
-        self.gesture_recognizer.cluster_poses ()
+
+        print_status ("Gesture_Recognizer", "Training Model")
+        self.gesture_recognizer.train_model ()
 
 
+
+
+    ########################################################################################################################
+    ##############################[ --- Synth Main --- ]####################################################################
+    ########################################################################################################################
+
+    # Function: synth_main
+    # --------------------
+    # records discrete gestures and classifies them for you.
+    def synth_main (self):
+
+        print_message ("Recording Discrete events")
+        while (True):
+
+            ### Step 1: initialize the gesture ###
+            observed_gesture = []
+
+            ### Step 2: start the recording ###
+            self.record_countdown ()
+
+            ### Step 3: fill it with frames ###
+            num_frames_recorded = 0
+            while (num_frames_recorded < 100):
+                frame = self.get_frame ()
+                pose = Pose(frame)
+                observed_gesture.append (pose.features)
+                num_frames_recorded += 1
+
+
+            ### Step 4: stop the recording and classify ###
+            print_message ("### Recording Complete ###")
+            self.gesture_recognizer.classify_gesture ("")
+
+            print_message("enter to continue")
+            sys.stdin.readline ()
 
 
 
@@ -209,7 +239,7 @@ def main():
 
     ### Step 1: create Leap_Synth object ###
     leap_synth = Leap_Synth ()
-    time.sleep (1)
+    time.sleep (0.7)
 
 
     ### Step 2: enter main interface ###
