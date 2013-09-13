@@ -109,6 +109,7 @@ class Gesture_Recognizer:
 		self.is_recording = True
 		self.num_frames_recorded = 0
 		self.recording_gesture = Gesture (name=gesture_name)
+		print_message ("starting number of frames: " + str(len(self.recording_gesture.poses)))
 
 
 	# Function: add_frame_to_recoring
@@ -117,7 +118,7 @@ class Gesture_Recognizer:
 	def add_frame_to_recording (self, frame):
 
 		self.recording_gesture.add_frame (frame)
-		self.num_frames_recorded = 0
+		self.num_frames_recorded += 1
 
 
 	# Function: stop_recording_gesture
@@ -126,14 +127,15 @@ class Gesture_Recognizer:
 	# we are recording to in the appropriate location
 	def stop_recording_gesture (self):
 
+		### Step 1: save the gesture ###
 		save_filename = self.get_save_filename (self.recording_gesture.name)
-		
 		self.recording_gesture.pickle_self (save_filename)
-
 		print_status ("Gesture Recognizer", "Saved recorded gesture at " + save_filename)
+		print_inner_status ("Final # of frames", str(len(self.recording_gesture.poses)))
 
-		self.recording_gesture = None
-		num_frames_recorded = 0
+		### Step 2: clear out our recording gesture ###
+		del self.recording_gesture
+		self.num_frames_recorded = 0
 
 
 
@@ -167,7 +169,9 @@ class Gesture_Recognizer:
 			new_gesture = np.array (new_gesture)
 			shortened_gesture = []
 			for position in new_gesture:
-				shortened_gesture.append (position[:3])
+				p = [float(e) for e in position]
+				shortened_gesture.append (p[2:4])
+
 			shortened_gesture = np.array (shortened_gesture)
 
 			### Step 3: add to the list of gestures ###

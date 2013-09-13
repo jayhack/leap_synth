@@ -166,8 +166,11 @@ class Gesture:
 	# initializes an empty frame
 	def __init__ (self, name='__UNCLASSIFIED__'):
 
-		### Step 1: set name if appropriate ###
+		### Step 1: set/initialize data and parameters ###
 		self.name = name
+		self.O = []
+		self.poses = []
+		self.S = []
 
 
 	# Function: add_frame 
