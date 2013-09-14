@@ -230,7 +230,7 @@ class Gesture_Recognizer:
 	# returns the name of a gesture if it works, 'none' otherwise
 	def classify_gesture (self, observed_gesture):
 
-		threshold = -6000.0
+		threshold = -5000.0
 		# print_message ("Classify Gesture:")
 
 
@@ -243,6 +243,7 @@ class Gesture_Recognizer:
 		### Step 3: decide if it qualifies as any of them ###
 		return_val = None
 		if scores[0][1] > threshold:
+			print scores
 			return_val =  scores[0][0]
 
 		# print_message ("Classification: " + str(return_val))
