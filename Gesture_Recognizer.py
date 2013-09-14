@@ -57,20 +57,11 @@ class Gesture_Recognizer:
 	# load data and train model
 	def __init__ (self):
 
-		# ### Step 1: load in data ###
-		# print_status ("Gesture Recognizer (Init)", "Loading Data")
-		# self.load_data ()
-
-		# ### Step 2: train the classifier ###
-		# print_status ("Gesture Recognizer (Init)", "Training Model")
-		# self.train_model ()
-		# print_status ("Gesture_Recognizer (Init)", "Init complete")
-
 		pass
 
 
 	########################################################################################################################
-	##############################[ --- Recording Gestures --- ]############################################################
+	##############################[ --- Loading/Saving Gestures --- ]#######################################################
 	########################################################################################################################
 
 	# Function: get_save_filename
@@ -96,65 +87,18 @@ class Gesture_Recognizer:
 		return os.path.join (gesture_dir, str(example_index) + '.gesture')
 
 
-	# Function: start_recording_gesture
-	# ---------------------------------
-	# call this function to begin starting a gesture
-	# does all of the following:
-	# - sets state to recording
-	# - sets number of frames recorded to 0
-	# - creates the empty gesture we will record to
-	def start_recording_gesture (self, gesture_name):
-
-		print_status ("Gesture Recognizer", "Started recording a gesture named " + gesture_name)
-		self.is_recording = True
-		self.num_frames_recorded = 0
-		self.recording_gesture = Gesture (name=gesture_name)
-		print_message ("starting number of frames: " + str(len(self.recording_gesture.O)))
-
-
-	# Function: add_frame_to_recoring
-	# -------------------------------
-	# given a frame, this will add it to the recording
-	def add_frame_to_recording (self, frame):
-
-		self.recording_gesture.add_frame (frame)
-		self.num_frames_recorded += 1
-
-
-	# Function: stop_recording_gesture
-	# --------------------------------
-	# finalizes the recording process.
-	def stop_recording_gesture (self):
-
-		self.num_frames_recorded = 0
-
 	# Function: save_gesture 
 	# ----------------------
-	# pickles the gesture
-	def save_gesture (self):
+	# pickles a given gesture
+	def save_gesture (self, gesture):
 
 		### Step 1: save the gesture ###
-		save_filename = self.get_save_filename (self.recording_gesture.name)
-		self.recording_gesture.pickle_self (save_filename)
+		save_filename = self.get_save_filename (gesture.name)
+		gesture.pickle_self (save_filename)
 		print_status ("Gesture Recognizer", "Saved recorded gesture at " + save_filename)
-		print_inner_status ("Final # of frames", str(len(self.recording_gesture.O)))
+		print_inner_status ("Final # of frames", str(len(gesture.O)))
+		print gesture.O
 
-		### Step 2: clear out our recording gesture ###
-		del self.recording_gesture
-		self.num_frames_recorded = 0
-
-
-
-
-
-
-
-
-
-
-	########################################################################################################################
-	##############################[ --- Building Classifier --- ]###########################################################
-	########################################################################################################################
 
 	# Function: get_gestures
 	# ----------------------
@@ -165,17 +109,16 @@ class Gesture_Recognizer:
 		example_filenames = [os.path.join (gesture_dir, f) for f in os.listdir (gesture_dir)]
 		for example_filename in example_filenames:
 
-			### Step 1: load in the raw list of positions = 'gesture' ###
-			example_file = open(example_filename, 'r')
-			new_gesture = np.array(pickle.load (example_file))
-			gesture = []
-			for position in new_gesture:
-				gesture.append (np.array(position[:-3])) 
-			gesture = np.array(gesture)
-			example_file.close ()
+			### Step 1: create the gesture ###
+			gesture = Gesture (observations_filepath=example_filename)
+
+			### Step 2: make sure it is full/clean ###
+			if not gesture.is_full ():
+				print_error ("Loading Gestures", "Encountered a gesture that is not yet full")
+
 
 			### Step 3: add to the list of gestures ###
-			self.gestures[gesture_type].append (gesture)
+			self.gestures[gesture_type].append (gesture.get_feature_rep ())
 
 
 	# Function: load_data
@@ -196,6 +139,7 @@ class Gesture_Recognizer:
 
 			self.get_gestures (gesture_dir, gesture_type)
 
+
 	# Function: print_data_stats
 	# --------------------------
 	# prints information on the loaded training examples
@@ -204,6 +148,17 @@ class Gesture_Recognizer:
 		print_message ("Training Example Counts: ")
 		for key, value in self.gestures.items ():
 			print "	", key, ": ", len(value)
+
+
+
+
+
+
+
+
+	########################################################################################################################
+	##############################[ --- Building/Managing Classifier --- ]##################################################
+	########################################################################################################################
 
 
 	# Function: train_model
@@ -226,12 +181,14 @@ class Gesture_Recognizer:
 
 		self.save_model ()
 
+
 	# Function: load_model
 	# --------------------
 	# loads the model from a pickled file
 	def load_model (self):
 
 		self.hmms = pickle.load (open(self.classifier_filename, 'r'))
+
 
 	# Function: save_model
 	# --------------------
@@ -240,44 +197,55 @@ class Gesture_Recognizer:
 
 		pickle.dump (self.hmms, open(self.classifier_filename, 'w'))
 
+
+
+
+
+
+
+
+
+	########################################################################################################################
+	##############################[ --- Using Classifier --- ]##############################################################
+	########################################################################################################################
+
 	# Function: get_scores
-	# --------------------------
+	# --------------------
 	# given a gesture, this will return a sorted list of (label, score). does not
 	# threshold or anything
-	def get_scores (self, gesture):
+	def get_scores (self, feature_rep):
 
-		scores = [(gesture_type, hmm.score (gesture)) for gesture_type, hmm in self.hmms.items()]
+		scores = [(gesture_type, hmm.score (feature_rep)) for gesture_type, hmm in self.hmms.items()]
 		scores = sorted (scores, key=itemgetter(1), reverse=True)
 
-		# print "--- Classification Outcome ---"
-		# for score in scores:
-			# print "	- ", score[0], ": ", score[1]
+		print "--- Classification Outcome ---"
+		for score in scores:
+			print "	- ", score[0], ": ", score[1]
 
 		return scores
+
 
 	# Function: classify_gesture
 	# --------------------------
 	# returns the name of a gesture if it works, 'none' otherwise
-	def classify_gesture (self, new_gesture):
-
-		# print_message ("Classify Gesture:")
+	def classify_gesture (self, observed_gesture):
 
 		threshold = -4000.0
+		print_message ("Classify Gesture:")
 
-		### Step 2: convert to np.array ###
-		new_gesture = np.array (new_gesture)
-		gesture = []
-		for position in new_gesture:
-			gesture.append (np.array(position[:-3])) 
-		gesture = np.array(gesture)
 
-		scores = self.get_scores (gesture)
+		### Step 1: get feature_representation ###
+		feature_rep = observed_gesture.get_feature_rep ()
+
+		### Step 2: get the scores ###
+		scores = self.get_scores (feature_rep)
+
+		### Step 3: decide if it qualifies as any of them ###
 		return_val = None
 		if scores[0][1] > threshold:
-			print gesture
 			return_val =  scores[0][0]
 
-		# print_message ("Classification: " + str(return_val))
+		print_message ("Classification: " + str(return_val))
 		return return_val
 
 
