@@ -153,7 +153,7 @@ class Gesture:
 	O 		= []				# list of feature vectors constituting this gesture
 
 	#--- Parameters ---
-	gesture_length = 50		# number of frames stored in the gesture
+	gesture_length = 30		# number of frames stored in the gesture
 	d1_length = 4			# small derivative of motion
 	d2_length = 8			# large derivative of motion
 

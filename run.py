@@ -183,7 +183,8 @@ class Leap_Synth:
                     print "."
                     num_frames_recorded += 1
                 else:
-                    print "x"
+                    # print "x"
+                    pass
 
                 ### --- Check if we should end the recording --- ###
                 if num_frames_recorded >= record_gesture.gesture_length:
