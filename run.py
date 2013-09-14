@@ -13,6 +13,7 @@ import os
 import sys
 import select 
 import time
+import curses
 
 #--- Leap ---
 sys.path.append ('/Users/jayhack/CS/NI/LeapDeveloperKit/LeapSDK/lib')
@@ -111,7 +112,7 @@ class Leap_Synth:
             self.train_main ()
         elif response == 's':
             while (True):
-                self.synth_main_discrete ()
+                self.synth_main ()
         else:
             print_message("Error: did not recognize that option")
             self.interface_main ()
@@ -162,23 +163,42 @@ class Leap_Synth:
         print_message ("Now we will begin recording " + str(max_examples) + " examples of this gesture, " + str(gesture_name) + ". Press Enter when ready.")
         sys.stdin.readline ()
 
+        record_gesture = Gesture (gesture_name)
+
+
+
+        #--- initialize parameters ---
+        is_recording        = False
+        num_frames_recorded = 0
 
         while (num_examples_recorded < max_examples):
 
-            ### Step 2: start the recording ###
-            self.record_countdown ()
-            record_gesture = Gesture (name=gesture_name)
+            frame = self.get_frame ()
+            record_gesture.add_frame (frame)
 
-            ### Step 3: fill up the gesture with frames ###
-            while not record_gesture.is_full ():
-                frame = self.get_frame ()
-                record_gesture.add_frame (frame)
+            if record_gesture.is_full ():
 
-            ### Step 4: stop the recording ###
-            print_message ("### Recording Complete ###")
-            self.gesture_recognizer.save_gesture (record_gesture)
+                ### --- Notify of recording status --- ###
+                if is_recording:
+                    print "."
+                    num_frames_recorded += 1
+                else:
+                    print "x"
 
-            num_examples_recorded += 1
+                ### --- Check if we should end the recording --- ###
+                if num_frames_recorded >= record_gesture.gesture_length:
+                    print_message ("### Recording Complete ###")
+                    is_recording = False
+                    num_frames_recorded = 0
+                    num_examples_recorded += 1
+                    self.gesture_recognizer.save_gesture(record_gesture)
+
+                ### --- Check if we should start the recording --- ### 
+                while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+                  line = sys.stdin.readline()
+                  if line:
+                    print_message ("### Started Recording ###")
+                    is_recording = True
 
 
 
@@ -245,28 +265,27 @@ class Leap_Synth:
         self.gesture_recognizer.load_model ()
         print_message ("Entering Main Loop: Continuous Gesture Recognition")
         observed_gesture = Gesture ()
-        num_frames = 0
 
         ### Step 2: enter main loop ###
         while (True):
+
 
             ### --- add the current frame --- ###
             frame = self.get_frame ()
             observed_gesture.add_frame (frame)
 
-            ### --- pop off the last frame and classify if we are over 70 --- ###
-            if num_frames > 70:
+            if observed_gesture.is_full ():
 
-                observed_gesture.pop_oldest_frame ()
-                classification_results = self.gesture_recognizer.classify_gesture (observed_gesture.O)
+                ### --- get classification results --- ###
+                classification_results = self.gesture_recognizer.classify_gesture (observed_gesture)
+
+                ### --- interpret them --- ###
                 if classification_results:
                     
                     print_message ("--- RECEIVED GESTURE: " + str(classification_results))
                     self.max_interface.send_message (str(classification_results))
+                    observed_gesture.clear ()
 
-                    time.sleep (2)
-
-            num_frames += 1
 
 
 
