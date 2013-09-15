@@ -8,7 +8,7 @@
 			"architecture" : "x86"
 		}
 ,
-		"rect" : [ 0.0, 44.0, 960.0, 605.0 ],
+		"rect" : [ 0.0, 47.0, 960.0, 605.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -31,13 +31,138 @@
 				"box" : 				{
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
+					"id" : "obj-6",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 1329.846436, 648.856384, 43.0, 18.0 ],
+					"text" : "loop 1"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-63",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 2,
+					"outlettype" : [ "float", "bang" ],
+					"patching_rect" : [ 1386.268066, 195.331512, 525.0, 20.0 ],
+					"text" : "buffer~ basic_beat /Users/jayhack/CS/NI/leap_synth/samples/Beat_Components/basic_beat.wav"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-60",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 468.132721, 30.86153, 69.0, 18.0 ],
+					"text" : "basic_beat"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-59",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 561.600037, 30.86153, 55.0, 18.0 ],
+					"text" : "airflow 8"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-58",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 654.080017, 30.86153, 95.0, 18.0 ],
+					"text" : "basketball_drop"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"frgb" : 0.0,
+					"id" : "obj-57",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 263.462708, 9.640001, 150.0, 20.0 ],
+					"text" : "--- Debug Mesages ---"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-56",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 145.492737, 453.861542, 119.0, 20.0 ],
+					"text" : "s basic_beat_trigger"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-55",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 1564.065552, 648.856384, 32.5, 18.0 ],
+					"text" : "0"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-54",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 1564.065552, 600.856384, 117.0, 20.0 ],
+					"text" : "r basic_beat_trigger"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
 					"id" : "obj-52",
 					"maxclass" : "message",
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1221.146484, 648.856384, 43.0, 18.0 ],
-					"text" : "loop 0"
+					"patching_rect" : [ 1087.846436, 648.856384, 43.0, 18.0 ],
+					"text" : "loop 1"
 				}
 
 			}
@@ -50,7 +175,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1288.146484, 600.856384, 117.0, 20.0 ],
+					"patching_rect" : [ 1130.846436, 600.856384, 117.0, 20.0 ],
 					"text" : "r basic_beat_trigger"
 				}
 
@@ -65,7 +190,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 1288.146484, 527.856384, 150.0, 60.0 ],
+					"patching_rect" : [ 1130.846436, 527.856384, 150.0, 60.0 ],
 					"text" : "basic_beat\n--------------\nthe basic beat, which will loop throughout the song."
 				}
 
@@ -79,7 +204,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1320.646484, 648.856384, 32.5, 18.0 ],
+					"patching_rect" : [ 1163.346436, 648.856384, 32.5, 18.0 ],
 					"text" : "1"
 				}
 
@@ -93,7 +218,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "signal" ],
-					"patching_rect" : [ 1320.646484, 682.939026, 33.0, 20.0 ],
+					"patching_rect" : [ 1163.346436, 682.939026, 33.0, 20.0 ],
 					"text" : "sig~"
 				}
 
@@ -107,7 +232,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1288.146484, 648.856384, 32.5, 18.0 ],
+					"patching_rect" : [ 1130.846436, 648.856384, 32.5, 18.0 ],
 					"text" : "0"
 				}
 
@@ -121,7 +246,7 @@
 					"numinlets" : 3,
 					"numoutlets" : 2,
 					"outlettype" : [ "signal", "signal" ],
-					"patching_rect" : [ 1320.646484, 727.756897, 142.0, 20.0 ],
+					"patching_rect" : [ 1163.346436, 727.756897, 142.0, 20.0 ],
 					"text" : "groove~ basketball_drop"
 				}
 
@@ -149,7 +274,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1530.084839, 600.856384, 93.0, 20.0 ],
+					"patching_rect" : [ 1329.846436, 600.856384, 93.0, 20.0 ],
 					"text" : "r airflow_trigger"
 				}
 
@@ -162,7 +287,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 290.492737, 413.861542, 145.0, 20.0 ],
+					"patching_rect" : [ 282.82608, 413.861542, 145.0, 20.0 ],
 					"text" : "s basketball_drop_trigger"
 				}
 
@@ -202,7 +327,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1626.265503, 600.856384, 83.0, 20.0 ],
+					"patching_rect" : [ 1432.97522, 600.856384, 83.0, 20.0 ],
 					"text" : "r airflow_args"
 				}
 
@@ -246,7 +371,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 1530.084839, 513.856384, 179.180634, 74.0 ],
+					"patching_rect" : [ 1384.884888, 513.856384, 179.180634, 74.0 ],
 					"text" : "airflow\n--------\nsample of air flowing, looped at a frequency determined by the second argument"
 				}
 
@@ -260,8 +385,8 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
-					"patching_rect" : [ 1386.268066, 84.011536, 419.0, 20.0 ],
-					"text" : "buffer~ airflow /Users/jayhack/CS/NI/leap_synth/samples/Starting/airflow.wav"
+					"patching_rect" : [ 1386.268066, 84.011536, 455.0, 20.0 ],
+					"text" : "buffer~ airflow /Users/jayhack/CS/NI/leap_synth/samples/Intro_Samples/airflow.wav"
 				}
 
 			}
@@ -289,8 +414,8 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1626.265503, 648.856384, 32.5, 18.0 ],
-					"text" : "8"
+					"patching_rect" : [ 1458.384888, 648.856384, 32.5, 18.0 ],
+					"text" : "0"
 				}
 
 			}
@@ -303,7 +428,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "signal" ],
-					"patching_rect" : [ 1603.584839, 682.939026, 33.0, 20.0 ],
+					"patching_rect" : [ 1458.384888, 682.939026, 33.0, 20.0 ],
 					"text" : "sig~"
 				}
 
@@ -317,7 +442,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1590.584839, 648.856384, 32.5, 18.0 ],
+					"patching_rect" : [ 1384.884888, 648.856384, 32.5, 18.0 ],
 					"text" : "0"
 				}
 
@@ -331,7 +456,7 @@
 					"numinlets" : 3,
 					"numoutlets" : 2,
 					"outlettype" : [ "signal", "signal" ],
-					"patching_rect" : [ 1603.584839, 726.993347, 92.0, 20.0 ],
+					"patching_rect" : [ 1458.384888, 726.993347, 92.0, 20.0 ],
 					"text" : "groove~ airflow"
 				}
 
@@ -359,7 +484,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "int" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 290.492737, 359.246338, 20.0, 20.0 ]
+					"patching_rect" : [ 282.82608, 359.246338, 20.0, 20.0 ]
 				}
 
 			}
@@ -395,9 +520,9 @@
 					"maxclass" : "newobj",
 					"numinlets" : 4,
 					"numoutlets" : 4,
-					"outlettype" : [ "", "", "", "" ],
-					"patching_rect" : [ 145.492737, 280.706329, 225.0, 20.0 ],
-					"text" : "route basic_beat airflow basketball_drop"
+					"outlettype" : [ "bang", "bang", "bang", "" ],
+					"patching_rect" : [ 145.492737, 280.706329, 229.0, 20.0 ],
+					"text" : "select basic_beat airflow basketball_drop"
 				}
 
 			}
@@ -421,12 +546,13 @@
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
 					"id" : "obj-20",
+					"linecount" : 3,
 					"maxclass" : "message",
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 145.492737, 190.031448, 32.5, 18.0 ],
-					"text" : "0"
+					"patching_rect" : [ 145.492737, 190.031448, 32.5, 45.0 ],
+					"text" : "basic_beat"
 				}
 
 			}
@@ -477,7 +603,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "int" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 24.912729, 113.24633, 20.0, 20.0 ]
+					"patching_rect" : [ 24.912729, 100.246323, 20.0, 20.0 ]
 				}
 
 			}
@@ -497,6 +623,7 @@
 			}
 , 			{
 				"box" : 				{
+					"bgcolor" : [ 0.0, 0.0, 0.0, 1.0 ],
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
 					"frgb" : 0.0,
@@ -504,8 +631,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 1386.268066, 20.712769, 150.0, 20.0 ],
-					"text" : "##[ INTRO SAMPLES ]##"
+					"patching_rect" : [ 1386.268066, 20.712769, 513.0, 20.0 ],
+					"text" : "############################[ --- INTRO SAMPLES --- ]##########################",
+					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
 			}
@@ -584,8 +712,8 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
-					"patching_rect" : [ 1386.268066, 50.86153, 520.0, 20.0 ],
-					"text" : "buffer~ basketball_drop /Users/jayhack/CS/NI/leap_synth/samples/Starting/basketball_drop.wav"
+					"patching_rect" : [ 1386.268066, 50.86153, 556.0, 20.0 ],
+					"text" : "buffer~ basketball_drop /Users/jayhack/CS/NI/leap_synth/samples/Intro_Samples/basketball_drop.wav"
 				}
 
 			}
@@ -634,6 +762,23 @@
 				}
 
 			}
+, 			{
+				"box" : 				{
+					"bgcolor" : [ 0.0, 0.0, 1.0, 1.0 ],
+					"bubblepoint" : 0.0,
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"frgb" : 0.0,
+					"id" : "obj-62",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 1386.268066, 159.236343, 514.0, 20.0 ],
+					"text" : "############################[ --- BEAT COMPONENTS --- ]#######################",
+					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
+				}
+
+			}
  ],
 		"lines" : [ 			{
 				"patchline" : 				{
@@ -649,6 +794,7 @@
 					"destination" : [ "obj-16", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
+					"midpoints" : [ 34.412727, 132.0, 168.492737, 132.0 ],
 					"source" : [ "obj-12", 0 ]
 				}
 
@@ -658,6 +804,7 @@
 					"destination" : [ "obj-20", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
+					"midpoints" : [ 34.412727, 177.0, 154.992737, 177.0 ],
 					"source" : [ "obj-12", 0 ]
 				}
 
@@ -676,6 +823,7 @@
 					"destination" : [ "obj-19", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
+					"midpoints" : [ 168.492737, 165.0, 249.0, 165.0, 249.0, 132.0, 272.962708, 132.0 ],
 					"source" : [ "obj-16", 0 ]
 				}
 
@@ -712,6 +860,7 @@
 					"destination" : [ "obj-16", 1 ],
 					"disabled" : 0,
 					"hidden" : 0,
+					"midpoints" : [ 272.962708, 153.0, 219.0, 153.0, 219.0, 132.0, 199.492737, 132.0 ],
 					"source" : [ "obj-19", 0 ]
 				}
 
@@ -781,6 +930,15 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-56", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-29", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-12", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
@@ -809,6 +967,15 @@
 , 			{
 				"patchline" : 				{
 					"destination" : [ "obj-40", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-37", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-6", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-37", 0 ]
@@ -857,7 +1024,7 @@
 					"destination" : [ "obj-5", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 1613.084839, 822.0, 457.992737, 822.0 ],
+					"midpoints" : [ 1467.884888, 822.0, 457.992737, 822.0 ],
 					"source" : [ "obj-41", 0 ]
 				}
 
@@ -912,7 +1079,7 @@
 					"destination" : [ "obj-5", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 1330.146484, 822.0, 457.992737, 822.0 ],
+					"midpoints" : [ 1172.846436, 822.0, 457.992737, 822.0 ],
 					"source" : [ "obj-51", 0 ]
 				}
 
@@ -923,6 +1090,99 @@
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-52", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-55", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-54", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-38", 1 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-55", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-38", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-55", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-11", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-58", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-16", 1 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"midpoints" : [ 663.580017, 120.0, 199.492737, 120.0 ],
+					"source" : [ "obj-58", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-11", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-59", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-16", 1 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"midpoints" : [ 571.100037, 120.0, 199.492737, 120.0 ],
+					"source" : [ "obj-59", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-41", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-6", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-11", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-60", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-16", 1 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"midpoints" : [ 477.632721, 120.0, 199.492737, 120.0 ],
+					"source" : [ "obj-60", 0 ]
 				}
 
 			}
