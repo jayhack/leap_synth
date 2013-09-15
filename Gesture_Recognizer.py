@@ -17,7 +17,7 @@ from operator import itemgetter
 sys.path.append ('/Users/jayhack/anaconda/lib/python2.7/site-packages/scipy/')
 from common_utilities import print_message, print_error, print_status, print_inner_status
 from Gesture import Gesture
-from Markov import HMM_Backend
+from HMM_Backend import HMM_Backend
 
 #--- SKLearn ---
 import numpy as np
@@ -162,9 +162,13 @@ class Gesture_Recognizer:
 	########################################################################################################################
 
 	# Function: get_sequence
-	# def get_sequence (gesture):
-		# for gesture_type, hmm in self.hmms:
-			# pass
+	# ----------------------
+	def get_rep_for_hmm_backend (self, gesture):
+		rep = []
+		for gesture_type, hmm in self.hmms.items():
+			rep += list (hmm.predict(gesture))
+		return rep
+
 
 	# Function: train_model
 	# ---------------------
@@ -173,14 +177,12 @@ class Gesture_Recognizer:
 
 		n_components = 5
 
-
 		### Step 1: get the mixture model ###
 		for gesture_type, gestures in self.gestures.items ():
 			
 			for index, gesture in enumerate(gestures):
 				print "--- Gesture (", index, ", ", gesture_type, ") ---"
 				print gesture, "\n"
-				pass
 
 			model = GaussianHMM (n_components)
 
@@ -194,14 +196,11 @@ class Gesture_Recognizer:
 		for gesture_type, gestures in self.gestures.items ():
 
 			for gesture in gestures:
+				
 				### Step 2: get the backend cuz sklearn wont FIT ITS OWN FUCKING PARAMETERS ###
-				sequence = []
-				for g_type, hmm in self.hmms.items():
-					prediction = list(hmm.predict (gesture))
-					sequence += prediction
-				print sequence
+				rep = self.get_rep_for_hmm_backend (gesture)
 
-				sequences.append (sequence)
+				sequences.append (rep)
 				labels.append (gesture_type)
 
 		self.hmm_backend = LogisticRegression ()
@@ -249,21 +248,17 @@ class Gesture_Recognizer:
 	def get_scores (self, feature_rep):
 
 		scores = []
-		sequence = []
-		for gesture_type, hmm in self.hmms.items ():
-			sequence += list(hmm.predict (feature_rep))
+		hmm_backend_rep = self.get_rep_for_hmm_backend (feature_rep)
 
-		probabilities = self.hmm_backend.predict_proba (sequence)
-		# print probabilities
-		# print self.hmm_backend.classes_
+
+		probabilities = self.hmm_backend.predict_proba (hmm_backend_rep)
 		for c, p in zip(self.hmm_backend.classes_, probabilities[0]):
 			scores.append ((c, p))
 		scores = sorted(scores, key=itemgetter(1), reverse=True)
 
-		print "--- Classification Outcome ---"
-		for score in scores:
-			print "	- ", score[0], ": ", score[1]
-
+		# print "--- Classification Outcome ---"
+		# for score in scores:
+			# print "	- ", score[0], ": ", score[1]
 		return scores
 
 
@@ -284,9 +279,9 @@ class Gesture_Recognizer:
 		### Step 3: decide if it qualifies as any of them ###
 		return_val = None
 		if scores[0][1] > threshold:
-			print "--- Classification Outcome ---"
-			for score in scores:
-				print "	- ", score[0], ": ", score[1]
+			# print "--- Classification Outcome ---"
+			# for score in scores:
+				# print "	- ", score[0], ": ", score[1]
 			# print "best sequences: "
 			# for name, model in self.hmms.items ():
 				# print "	", name, ": ", model.predict (feature_rep)
