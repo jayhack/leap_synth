@@ -176,7 +176,8 @@ class Gesture_Recognizer:
 
 			model.fit (gestures)
 			for gesture in gestures:
-				print model.predict (gesture)
+				sequence = model.predict (gesture)
+			print model.get_params ()
 
 
 			self.hmms[gesture_type] = model
@@ -250,8 +251,8 @@ class Gesture_Recognizer:
 			print "best sequences: "
 			for name, model in self.hmms.items ():
 				print "	", name, ": ", model.predict (feature_rep)
-				print "	startprob: ", model.get_params("startprob")
-				print " transmat: ", model.get_params ("transmat")
+				print "	startprob: ", model.get_params()
+				print " transmat: ", model.get_params ()
 			return_val = scores[0][0]
 
 
