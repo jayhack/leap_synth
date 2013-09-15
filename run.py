@@ -257,6 +257,41 @@ class Leap_Synth:
             sys.stdin.readline ()
 
 
+
+    # Function: get_gesture
+    # ---------------------
+    # function to wait on gestures
+    def get_gesture (self, observed_gesture):
+
+        ### --- add the current frame --- ###
+        frame = self.get_frame ()
+        observed_gesture.add_frame (frame)
+
+        if observed_gesture.is_full ():
+
+            ### --- get classification results --- ###
+            classification_results = self.gesture_recognizer.classify_gesture (observed_gesture)
+
+            ### --- interpret them --- ###
+            return self.classification_results
+
+
+    # Function: get_coords
+    # --------------------
+    # returns (x,y,z) of the hand
+    def get_continuous_coords (self):
+
+        ### --- add the current frame --- ###
+        frame = self.get_frame ()
+
+        if len(frame.hands) == 0:
+            return None
+        else:
+            position = hands[0].palm_position
+            return (position[0], position[1], posiiton[2])
+
+
+
     # Function: synth_main
     # --------------------
     # maintains a 70-frame gesture and tries to classify it
@@ -267,9 +302,10 @@ class Leap_Synth:
         print_message ("Entering Main Loop: Continuous Gesture Recognition")
         observed_gesture = Gesture ()
 
+        
+
         ### Step 2: enter main loop ###
         while (True):
-
 
             ### --- add the current frame --- ###
             frame = self.get_frame ()
@@ -282,13 +318,12 @@ class Leap_Synth:
 
                 ### --- interpret them --- ###
                 if classification_results:
-                    
-                    print_message ("--- RECEIVED GESTURE: " + str(classification_results))
-                    self.max_interface.send_message (str(classification_results))
-                    observed_gesture.clear ()
-                else:
-                    # print "x"
-                    pass
+                    print_message(classification_results)
+
+
+                
+
+
 
 
 
