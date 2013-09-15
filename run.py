@@ -23,7 +23,7 @@ import Leap
 from common_utilities import print_welcome, print_message, print_error, print_status, print_inner_status
 from Synth_Listener import Synth_Listener
 from Max_Interface import Max_Interface
-from Gesture import Gesture, compute_features
+from Gesture import Gesture
 from Gesture_Recognizer import Gesture_Recognizer
 
 
@@ -183,8 +183,7 @@ class Leap_Synth:
                     print "."
                     num_frames_recorded += 1
                 else:
-                    # print "x"
-                    pass
+                    print "x"
 
                 ### --- Check if we should end the recording --- ###
                 if num_frames_recorded >= record_gesture.gesture_length:

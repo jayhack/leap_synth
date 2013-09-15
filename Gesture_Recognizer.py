@@ -233,7 +233,6 @@ class Gesture_Recognizer:
 		threshold = -5000.0
 		# print_message ("Classify Gesture:")
 
-
 		### Step 1: get feature_representation ###
 		feature_rep = observed_gesture.get_feature_rep ()
 
@@ -243,8 +242,7 @@ class Gesture_Recognizer:
 		### Step 3: decide if it qualifies as any of them ###
 		return_val = None
 		if scores[0][1] > threshold:
-			print scores
-			return_val =  scores[0][0]
+			return_val = scores[0][0]
 
 		# print_message ("Classification: " + str(return_val))
 		return return_val
