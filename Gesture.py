@@ -115,11 +115,12 @@ class Gesture:
 		if features == None:
 			self.clear ()
 			print "--- lost hand ---"
+			return
 
-		### Step 3: store frame and feature vector representaiton ###
+		### Step 4: store frame and feature vector representaiton ###
 		self.O.append (features)
 
-		### Step 4: remove frames if necessary ###
+		### Step 5: remove frames if necessary ###
 		if len(self.O) > self.gesture_length:
 			self.pop_oldest_frame ()
 
@@ -246,7 +247,7 @@ class Gesture:
 		motion_features = self.get_motion_features (positional_features, d1_positional_features, d2_positional_features)
 
 		### Step 4: combine them and return ###
-		combined_features = positional_features + motion_features
+		combined_features = motion_features
 		return combined_features
 
 

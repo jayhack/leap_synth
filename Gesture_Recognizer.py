@@ -163,16 +163,21 @@ class Gesture_Recognizer:
 	# trains the Gaussian HMM and saves it
 	def train_model (self):
 
-		n_components = 10
+		n_components = 5
 
 		for gesture_type, gestures in self.gestures.items ():
 			
 			for index, gesture in enumerate(gestures):
 				print "--- Gesture (", index, ", ", gesture_type, ") ---"
 				print gesture, "\n"
+				pass
 
 			model = GaussianHMM (n_components)
+
 			model.fit (gestures)
+			for gesture in gestures:
+				print model.predict (gesture)
+
 
 			self.hmms[gesture_type] = model
 
@@ -227,7 +232,7 @@ class Gesture_Recognizer:
 	# returns the name of a gesture if it works, 'none' otherwise
 	def classify_gesture (self, observed_gesture):
 
-		threshold = -5000.0
+		threshold = -600.0
 		# print_message ("Classify Gesture:")
 
 		### Step 1: get feature_representation ###
@@ -239,7 +244,16 @@ class Gesture_Recognizer:
 		### Step 3: decide if it qualifies as any of them ###
 		return_val = None
 		if scores[0][1] > threshold:
+			print "--- Classification Outcome ---"
+			for score in scores:
+				print "	- ", score[0], ": ", score[1]
+			print "best sequences: "
+			for name, model in self.hmms.items ():
+				print "	", name, ": ", model.predict (feature_rep)
+				print "	startprob: ", model.get_params("startprob")
+				print " transmat: ", model.get_params ("transmat")
 			return_val = scores[0][0]
+
 
 		# print_message ("Classification: " + str(return_val))
 		return return_val

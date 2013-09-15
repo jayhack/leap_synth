@@ -178,6 +178,7 @@ class Leap_Synth:
 
             if record_gesture.is_full ():
 
+
                 ### --- Notify of recording status --- ###
                 if is_recording:
                     print "."
@@ -285,7 +286,8 @@ class Leap_Synth:
                     print_message ("--- RECEIVED GESTURE: " + str(classification_results))
                     self.max_interface.send_message (str(classification_results))
                     observed_gesture.clear ()
-
+                else:
+                    print "x"
 
 
 
