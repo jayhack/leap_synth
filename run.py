@@ -287,7 +287,8 @@ class Leap_Synth:
                     self.max_interface.send_message (str(classification_results))
                     observed_gesture.clear ()
                 else:
-                    print "x"
+                    # print "x"
+                    pass
 
 
 

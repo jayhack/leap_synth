@@ -32,7 +32,7 @@ class Gesture:
 	O 		= []				# list of feature vectors constituting this gesture
 
 	#--- Parameters ---
-	gesture_length = 30		# number of frames stored in the gesture
+	gesture_length = 60		# number of frames stored in the gesture
 	d1_length = 4			# small derivative of motion
 	d2_length = 8			# large derivative of motion
 
@@ -114,7 +114,7 @@ class Gesture:
 		### Step 3: if the hand was missing, reset the gesture (only consider sequences where we see the hand) ###
 		if features == None:
 			self.clear ()
-			print "--- lost hand ---"
+			# print "--- lost hand ---"
 			return
 
 		### Step 4: store frame and feature vector representaiton ###
@@ -247,7 +247,7 @@ class Gesture:
 		motion_features = self.get_motion_features (positional_features, d1_positional_features, d2_positional_features)
 
 		### Step 4: combine them and return ###
-		combined_features = motion_features
+		combined_features = motion_features + positional_features
 		return combined_features
 
 

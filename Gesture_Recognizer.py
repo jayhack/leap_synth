@@ -17,12 +17,14 @@ from operator import itemgetter
 sys.path.append ('/Users/jayhack/anaconda/lib/python2.7/site-packages/scipy/')
 from common_utilities import print_message, print_error, print_status, print_inner_status
 from Gesture import Gesture
+from Markov import HMM_Backend
 
 #--- SKLearn ---
 import numpy as np
 from sklearn import mixture
 from sklearn.hmm import GaussianHMM
 from sklearn.mixture import GMM
+from sklearn.linear_model import LogisticRegression
 
 
 class Gesture_Recognizer:
@@ -32,6 +34,7 @@ class Gesture_Recognizer:
 	data_dir = os.path.join (os.getcwd(), 'data/' + app_name)
 	classifiers_dir = os.path.join (os.getcwd (), 'classifiers/' + app_name)
 	classifier_filename = os.path.join(classifiers_dir, 'classifier.pkl')
+	classifier_backend_filename = os.path.join (classifiers_dir, 'classifier_backend.pkl')
 
 
 	#--- Recording ---
@@ -46,6 +49,7 @@ class Gesture_Recognizer:
 
 	#--- Classification: Gaussian HMMS ---
 	hmms = {}				#dict mapping gesture_type -> hmm
+	hmmbackend = None		#logistic regression curve...? will this work...?
 
 
 
@@ -157,6 +161,10 @@ class Gesture_Recognizer:
 	##############################[ --- Building/Managing Classifier --- ]##################################################
 	########################################################################################################################
 
+	# Function: get_sequence
+	# def get_sequence (gesture):
+		# for gesture_type, hmm in self.hmms:
+			# pass
 
 	# Function: train_model
 	# ---------------------
@@ -165,6 +173,8 @@ class Gesture_Recognizer:
 
 		n_components = 5
 
+
+		### Step 1: get the mixture model ###
 		for gesture_type, gestures in self.gestures.items ():
 			
 			for index, gesture in enumerate(gestures):
@@ -174,13 +184,31 @@ class Gesture_Recognizer:
 
 			model = GaussianHMM (n_components)
 
+			### Step 1: get the mixture model ###
 			model.fit (gestures)
-			for gesture in gestures:
-				sequence = model.predict (gesture)
-			print model.get_params ()
-
-
 			self.hmms[gesture_type] = model
+
+
+		sequences = []
+		labels = []		
+		for gesture_type, gestures in self.gestures.items ():
+
+			for gesture in gestures:
+				### Step 2: get the backend cuz sklearn wont FIT ITS OWN FUCKING PARAMETERS ###
+				sequence = []
+				for g_type, hmm in self.hmms.items():
+					prediction = list(hmm.predict (gesture))
+					sequence += prediction
+				print sequence
+
+				sequences.append (sequence)
+				labels.append (gesture_type)
+
+		self.hmm_backend = LogisticRegression ()
+		self.hmm_backend.fit (sequences, labels)
+		print self.hmm_backend.get_params ()
+		for (sequence, label) in zip(sequences, labels):
+			print "[", label, "]: ", self.hmm_backend.predict (sequence)
 
 		self.save_model ()
 
@@ -191,6 +219,7 @@ class Gesture_Recognizer:
 	def load_model (self):
 
 		self.hmms = pickle.load (open(self.classifier_filename, 'r'))
+		self.hmm_backend = pickle.load (open(self.classifier_backend_filename, 'r'))
 
 
 	# Function: save_model
@@ -199,6 +228,7 @@ class Gesture_Recognizer:
 	def save_model (self):
 
 		pickle.dump (self.hmms, open(self.classifier_filename, 'w'))
+		pickle.dump (self.hmm_backend, open(self.classifier_backend_filename, 'w'))
 
 
 
@@ -218,12 +248,21 @@ class Gesture_Recognizer:
 	# threshold or anything
 	def get_scores (self, feature_rep):
 
-		scores = [(gesture_type, hmm.score (feature_rep)) for gesture_type, hmm in self.hmms.items()]
-		scores = sorted (scores, key=itemgetter(1), reverse=True)
+		scores = []
+		sequence = []
+		for gesture_type, hmm in self.hmms.items ():
+			sequence += list(hmm.predict (feature_rep))
 
-		# print "--- Classification Outcome ---"
-		# for score in scores:
-			# print "	- ", score[0], ": ", score[1]
+		probabilities = self.hmm_backend.predict_proba (sequence)
+		# print probabilities
+		# print self.hmm_backend.classes_
+		for c, p in zip(self.hmm_backend.classes_, probabilities[0]):
+			scores.append ((c, p))
+		scores = sorted(scores, key=itemgetter(1), reverse=True)
+
+		print "--- Classification Outcome ---"
+		for score in scores:
+			print "	- ", score[0], ": ", score[1]
 
 		return scores
 
@@ -233,7 +272,7 @@ class Gesture_Recognizer:
 	# returns the name of a gesture if it works, 'none' otherwise
 	def classify_gesture (self, observed_gesture):
 
-		threshold = -600.0
+		threshold = 0.8
 		# print_message ("Classify Gesture:")
 
 		### Step 1: get feature_representation ###
@@ -248,11 +287,9 @@ class Gesture_Recognizer:
 			print "--- Classification Outcome ---"
 			for score in scores:
 				print "	- ", score[0], ": ", score[1]
-			print "best sequences: "
-			for name, model in self.hmms.items ():
-				print "	", name, ": ", model.predict (feature_rep)
-				print "	startprob: ", model.get_params()
-				print " transmat: ", model.get_params ()
+			# print "best sequences: "
+			# for name, model in self.hmms.items ():
+				# print "	", name, ": ", model.predict (feature_rep)
 			return_val = scores[0][0]
 
 
