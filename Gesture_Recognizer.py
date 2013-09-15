@@ -24,9 +24,6 @@ from sklearn import mixture
 from sklearn.hmm import GaussianHMM
 from sklearn.mixture import GMM
 
-#--- nltk ---
-from nltk.tag import hmm
-
 
 class Gesture_Recognizer:
 
