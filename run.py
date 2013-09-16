@@ -307,18 +307,32 @@ class Leap_Synth:
         ### Step 2: enter main loop ###
         while (True):
 
-            ### --- add the current frame --- ###
+            ### --- the string that will be sent as our message --- ###
+            send_string = ''
+
+            ### Step 1: add the current frame to observed_gesture ###
             frame = self.get_frame ()
             observed_gesture.add_frame (frame)
 
+            ### Step 2: if the gesture is full, attempt to classify it ###
             if observed_gesture.is_full ():
 
-                ### --- get classification results --- ###
                 classification_results = self.gesture_recognizer.classify_gesture (observed_gesture)
-
-                ### --- interpret them --- ###
                 if classification_results:
                     print_message(classification_results)
+                    send_string += str(classification_results) + ' '
+
+
+            ### Step 3: if the hand exists, add continuous output on its coords ###
+            if len (frame.hands) > 0:
+                position = frame.hands[0].palm_position
+                send_string += ' ' + str(position[0]) + ' ' + str(position[1]) + ' ' + str(position[2])
+
+
+            ### Step 4: send the full string ###
+            if send_string != '':
+                self.max_interface.send_message (send_string)
+
 
 
                 

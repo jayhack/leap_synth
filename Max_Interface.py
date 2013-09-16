@@ -46,9 +46,10 @@ class Max_Interface:
 
 		### Step 1: send it via UDP to max ###
 		if (self.UDPSock.sendto(message, self.addr)):
-			print_inner_status ("Max_Interface (Send Gesture)", "Sent gesture " + str(message))
+			# print_inner_status ("Max_Interface (Send Gesture)", "Sent gesture " + str(message))
+			pass
 		else:
-			print_error ("Max Interface", "Failed to send gesture", str(message), " to Max")
+			print_error ("Max Interface", "Failed to send gesture" + str(message) + " to Max")
 
 
 
