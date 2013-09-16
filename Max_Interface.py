@@ -19,6 +19,8 @@ class Max_Interface:
 	butf = 1024
 	addr = (host, port)
 
+	last_sent = None
+
 	#--- Objects for Communication ---
 	UDPSock = None
 
@@ -39,10 +41,71 @@ class Max_Interface:
 		self.UDPSock.close ()
 
 
+	# Function: gesture_to_sample_name
+	# --------------------------------
+	# takes in the name of a gesture, translates it to a message for use in the max patch
+	def gesture_to_sample_name (self, gesture_name):
+
+		message_map = {
+			'Up': 'basketball_drop',
+			'Flux': 'airflow',
+			'Down': 'basic_beat',
+			'Swish': 'x'
+		}
+
+		return message_map[gesture_name]
+
+
+
+	def is_gesture_appropriate (self, gesture):
+
+		if self.last_sent == None:
+			if gesture == 'Up':
+				return True
+			else:
+				return False
+
+		if self.last_sent == 'Up':
+			if gesture == 'Flux':
+				return True
+			else:
+				return False
+
+		if self.last_sent == 'Flux':
+			if gesture == 'Down':
+				return True
+
+		else:
+			return False
+
+
 	# Function: send_gesture
 	# ----------------------
 	# notifies max of the occurence of a given gesture
-	def send_message (self, message):
+	def send_message (self, gesture, coordinates):
+
+		args = []
+
+		### Step 1: peace out if there are no gesture or coordinates to report on ###
+		if (not gesture) and (not coordinates):
+			return
+
+		### Step 1: add the gesture to message ###
+		sample_name = 'NONE'
+		if gesture:
+			if self.is_gesture_appropriate (gesture):
+				sample_name = self.gesture_to_sample_name (gesture)
+				print_status ("send_message", "sending " + sample_name)
+				self.last_sent = gesture
+		args.append(sample_name)
+
+		### Step 2: add the coordinates to message ###
+		if coordinates:
+			args.append (' '.join([str(c) for c in coordinates]))
+
+		### Step 3: get the message string ###
+		message = ' '.join(args)
+
 
 		### Step 1: send it via UDP to max ###
 		if (self.UDPSock.sendto(message, self.addr)):
