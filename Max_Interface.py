@@ -49,8 +49,8 @@ class Max_Interface:
 		message_map = {
 			'Up': 'basketball_drop',
 			'Flux': 'airflow',
-			'Down': 'basic_beat',
-			'Swish': 'x'
+			'Swirl': 'basic_beat',
+			'Left': 'squeak'
 		}
 
 		return message_map[gesture_name]
@@ -72,7 +72,11 @@ class Max_Interface:
 				return False
 
 		if self.last_sent == 'Flux':
-			if gesture == 'Down':
+			if gesture == 'Swirl':
+				return True
+
+		if self.last_sent == 'Swirl':
+			if gesture == 'Left':
 				return True
 
 		else:

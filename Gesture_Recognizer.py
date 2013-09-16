@@ -12,6 +12,7 @@ import os
 import sys
 import pickle
 from operator import itemgetter 
+from collections import defaultdict
 
 #--- My Files ---
 sys.path.append ('/Users/jayhack/anaconda/lib/python2.7/site-packages/scipy/')
@@ -161,12 +162,40 @@ class Gesture_Recognizer:
 	##############################[ --- Building/Managing Classifier --- ]##################################################
 	########################################################################################################################
 
+	# Function: get_num_changes
+	# -------------------------
+	# number of sequence changes...
+	def get_num_changes (self, sequence):
+		cur = -1
+		num_changes = 0
+		for entry in sequence:
+			if entry != cur:
+				num_changes += 1
+			cur = entry
+		return num_changes
+
+	# Function: get_average_length
+	# ----------------------------
+	# average number of states
+	def get_state_lengths (self, sequence):
+		length = []
+		for i in range(10):
+			length.append (0)
+		for entry in sequence:
+			length[entry] += 1
+
+		return length
+
 	# Function: get_sequence
 	# ----------------------
 	def get_rep_for_hmm_backend (self, gesture):
 		rep = []
 		for gesture_type, hmm in self.hmms.items():
-			rep += list (hmm.predict(gesture))
+			sequence = hmm.predict (gesture)
+			# rep += list (sequence)			#the sequence itself
+			rep.append(self.get_num_changes (sequence))	#number of changes between states
+			rep += self.get_state_lengths (sequence)
+			rep.append(hmm.score (gesture))				#score
 		return rep
 
 
@@ -175,7 +204,7 @@ class Gesture_Recognizer:
 	# trains the Gaussian HMM and saves it
 	def train_model (self):
 
-		n_components = 5
+		n_components = 10
 
 		### Step 1: get the mixture model ###
 		for gesture_type, gestures in self.gestures.items ():
@@ -188,6 +217,32 @@ class Gesture_Recognizer:
 
 			### Step 1: get the mixture model ###
 			model.fit (gestures)
+			parameters = model.get_params ()	
+			startprob = model.startprob_
+			transmat = model.transmat_
+			print "------ ORIGINAL STARTPROB / TRANSMAT -----"
+			print startprob
+			print transmat
+			#shit... its getting these correctly...
+			for gesture in gestures:
+				print model.score (gesture)
+
+			### Step 2: have it predict the correct sequences ###
+			# sequences = []
+			# for gesture in gestures:
+				# sequence = model.predict (gesture)
+				# sequences.append (sequence)
+			# for sequence in sequences:
+				# print sequence
+			# hmm_backend = HMM_Backend (sequences, n_components)
+			# startprob = hmm_backend.startprob
+			# transmat = hmm_backend.follow_prob
+
+
+			# model.set_params(params)
+
+
+
 			self.hmms[gesture_type] = model
 
 
@@ -199,6 +254,7 @@ class Gesture_Recognizer:
 				
 				### Step 2: get the backend cuz sklearn wont FIT ITS OWN FUCKING PARAMETERS ###
 				rep = self.get_rep_for_hmm_backend (gesture)
+				print rep
 
 				sequences.append (rep)
 				labels.append (gesture_type)
@@ -249,13 +305,15 @@ class Gesture_Recognizer:
 
 		scores = []
 		hmm_backend_rep = self.get_rep_for_hmm_backend (feature_rep)
-
-
+		print hmm_backend_rep
 		probabilities = self.hmm_backend.predict_proba (hmm_backend_rep)
 		for c, p in zip(self.hmm_backend.classes_, probabilities[0]):
 			scores.append ((c, p))
-		scores = sorted(scores, key=itemgetter(1), reverse=True)
+		
+		# for gesture_type, hmm in self.hmms.items ():
+			# scores.append ((gesture_type, hmm.score (feature_rep)))
 
+		scores = sorted(scores, key=itemgetter(1), reverse=True)
 		# print "--- Classification Outcome ---"
 		# for score in scores:
 			# print "	- ", score[0], ": ", score[1]
@@ -267,7 +325,7 @@ class Gesture_Recognizer:
 	# returns the name of a gesture if it works, 'none' otherwise
 	def classify_gesture (self, observed_gesture):
 
-		threshold = 0.8
+		threshold = 0.5
 		# print_message ("Classify Gesture:")
 
 		### Step 1: get feature_representation ###
@@ -275,6 +333,7 @@ class Gesture_Recognizer:
 
 		### Step 2: get the scores ###
 		scores = self.get_scores (feature_rep)
+		print scores
 
 		### Step 3: decide if it qualifies as any of them ###
 		return_val = None

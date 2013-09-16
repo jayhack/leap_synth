@@ -5,6 +5,20 @@ class HMM_Backend:
 
 
     follow_prob = None
+    startprob = None
+
+
+    def get_startprob (self, sequences, num_states):
+        self.startprob = np.zeros((num_states))
+        for sequence in sequences:
+            start_state = sequence[0]
+            self.startprob[start_state] += 1
+        total = float(sum(self.startprob))
+        for index, t in enumerate(self.startprob):
+            self.startprob[index] /= total
+
+        print "----- START PROB -----"
+        print self.startprob
 
 
     def init_follow_prob (self, num_states):
@@ -22,9 +36,8 @@ class HMM_Backend:
         for sequence in sequences:
             for index, entry in enumerate(sequence[:-1]):
 
-                prev = entry - 1
-                next = sequence[index + 1] - 1
-
+                prev = entry 
+                next = sequence[index + 1]
 
                 self.follow_prob [prev][next] += 1.0
 
@@ -49,6 +62,7 @@ class HMM_Backend:
 
     def __init__(self, sequences, num_states):
 
+        self.get_startprob(sequences, num_states)
         self.init_follow_prob (num_states)
         self.get_follow_counts (sequences)
         self.get_follow_probs ()
