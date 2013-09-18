@@ -113,11 +113,12 @@ class Position:
 	def compute_features (self, this_frame, d1_frame, d2_frame):
 		
 		### Step 1: empty features if no hands are found ###
-		if len(frame.hands) == 0:
+		if len(this_frame.hands) == 0:
 			self.features = None
+			return
 
 		### Step 2: get positional features for all of them ###
-		this_positional_features 	= self.compute_positional_features (frame)
+		this_positional_features 	= self.compute_positional_features (this_frame)
 		d1_positional_features 		= self.compute_positional_features (d1_frame) 
 		d2_positional_features 		= self.compute_positional_features (d2_frame) 		
 

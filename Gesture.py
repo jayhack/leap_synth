@@ -79,23 +79,19 @@ class Gesture:
 	# returns a feature-vector representation of the gesture.
 	# this will be applied 
 	def get_hmm_rep (self):
-
-		if len(self.hmm_rep) > 0:
-			return self.hmm_rep
-		else:
 			
-			self.hmm_rep = []
-			### Step 1: add all frames appropriate for frame-reduction const ###
-			for i, O_i in enumerate(self.O):
-				if i % self.frame_reduction_const == 0:
-					self.hmm_rep.append (np.array(O_i))
+		self.hmm_rep = []
+		### Step 1: add all frames appropriate for frame-reduction const ###
+		for i, O_i in enumerate(self.O):
+			if i % self.frame_reduction_const == 0:
+				self.hmm_rep.append (np.array(O_i))
+			
+		### Step 2: add the very last frame ###
+		self.hmm_rep.append (np.array(self.O[-1]))
 
-			### Step 2: add the very last frame ###
-			self.hmm_rep.append (np.array(self.O[-1]))
-
-			### Step 3: convert to numpy array and return ###
-			self.hmm_rep = np.array (self.hmm_rep)
-			return self.hmm_rep
+		### Step 3: convert to numpy array and return ###
+		self.hmm_rep = np.array (self.hmm_rep)
+		return self.hmm_rep
 
 
 
@@ -143,7 +139,6 @@ class Gesture:
 
 		### Step 1: add to list of 'Frame' objects (self.frames) ###
 		self.frames.append (frame)
-
 
 		### Step 2: add to the list of observations (self.O) ###
 		(d1_frame, d2_frame) = self.get_prev_frames ()

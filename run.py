@@ -311,25 +311,27 @@ class Leap_Synth:
             frame = self.get_frame ()
             observed_gesture.add_frame (frame)
 
-            ### Step 2: Get the gesture, if appropriate ###
-            gesture = None
+
+            ### Step 2: Get the gesture, if appropriate ###nn
             if observed_gesture.is_full ():
 
                 classification_results = self.gesture_recognizer.classify_gesture (observed_gesture)
                 if classification_results:
-                    print_message(classification_results)
-                    gesture = str(classification_results)
+                    prediction = classification_results [0]
+                    prediction_prob = classification_results [1]
+                    print_message("Prediction: " + str(prediction) + " | Probability: " + str(prediction_prob))
+                    observed_gesture.clear ()
 
 
             ### Step 3: If the hand exists, add continuous output on its coords ###
-            coordinates = None
-            if len (frame.hands) > 0:
-                position = frame.hands[0].palm_position
-                coordinates = (position[0], position[1], position[2])
+            # coordinates = None
+            # if len (frame.hands) > 0:
+                # position = frame.hands[0].palm_position
+                # coordinates = (position[0], position[1], position[2])
 
 
             ### Step 4: Send message to max ###
-            self.max_interface.send_message (gesture, coordinates)
+            # self.max_interface.send_message (gesture, coordinates)
 
 
 

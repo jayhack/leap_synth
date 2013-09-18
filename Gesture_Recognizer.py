@@ -35,6 +35,7 @@ class Gesture_Recognizer:
 	classifiers_dir 		= os.path.join 	(os.getcwd (), 'classifiers/')
 	hmms_filename 			= os.path.join	(classifiers_dir, 'hmms.pkl')
 	classifier_filename 	= os.path.join 	(classifiers_dir, 'classifier.pkl')
+	gesture_dirs 			= {}	# dict: gesture_type -> directory containing recorded examples
 
 
 	#--- Recording ---
@@ -61,6 +62,7 @@ class Gesture_Recognizer:
 	#--- Parameters ---
 	num_hmm_states 					= 7		# number of states in HMM
 	training_examples_proportion	= 0.75	# amount of data to train on
+	prediction_prob_threshold		= 0.8
 
 
 
@@ -68,8 +70,15 @@ class Gesture_Recognizer:
 	# ---------------------
 	# load data and train model
 	def __init__ (self):
+		
+		### Step 1: initialize self.gestures ###
+		self.gestures = {}
 
-		pass
+		### Step 2: get all gesture types ###
+		self.get_gesture_types ()
+
+		### Step 3: get all gesture dirs ###
+		self.get_gesture_dirs () 
 
 
 
@@ -116,17 +125,18 @@ class Gesture_Recognizer:
 	# Function: get_save_filename
 	# ---------------------------
 	# given a gesture name, this will return the path of where to save it
-	def get_save_filename (self, gesture_name):
+	def get_save_filename (self, gesture_type):
 
-		### Step 1: make the filename - current # of examples + 1 ###
-		all_examples = os.listdir (self.gesture_dirs[gesture_name])
-		if len(all_examples) == 0:
-			example_index = 1
-		else:
-			example_index = len(all_examples) + 1
+		### Step 1: get the gesture_dir (does nothing when appropriate) ###
+		self.make_gesture_dir (gesture_type)
+		gesture_dir = self.gesture_dirs[gesture_type]
 
-		### Step 2: return gesture_dir/[n].gesture as the save filename ###
-		return os.path.join (gesture_dir, str(example_index) + '.gesture')
+		### Step 2: make the filename - current # of examples + 1 ###
+		all_recorded_gestures = os.listdir (gesture_dir)
+		next_index = len(all_recorded_gestures) + 1
+		filename = os.path.join (gesture_dir, str(next_index) + '.gesture')
+
+		return filename
 
 
 
@@ -250,6 +260,9 @@ class Gesture_Recognizer:
 
 
 
+
+
+
 	########################################################################################################################
 	##############################[ --- Getting Testing/Training Examples --- ]#############################################
 	########################################################################################################################
@@ -265,7 +278,7 @@ class Gesture_Recognizer:
 
 			hmm_score 		= hmm.score 	(gesture.get_hmm_rep ())
 			hmm_sequence 	= hmm.predict 	(gesture.get_hmm_rep ())
-			
+
 			### --- Note: for now, just go with scores? --- ###
 			classifiable_rep.append (hmm_score)
 
@@ -318,44 +331,31 @@ class Gesture_Recognizer:
 	##############################[ --- Training/Evaluating Classifier --- ]##################################################
 	########################################################################################################################
 
-	# Function: get_num_changes
-	# -------------------------
-	# number of sequence changes...
-	def get_num_changes (self, sequence):
-		cur = -1
-		num_changes = 0
-		for entry in sequence:
-			if entry != cur:
-				num_changes += 1
-			cur = entry
-		return num_changes
+	# # Function: get_num_changes
+	# # -------------------------
+	# # number of sequence changes...
+	# def get_num_changes (self, sequence):
+	# 	cur = -1
+	# 	num_changes = 0
+	# 	for entry in sequence:
+	# 		if entry != cur:
+	# 			num_changes += 1
+	# 		cur = entry
+	# 	return num_changes
 
 
-	# Function: get_average_length
-	# ----------------------------
-	# average number of states
-	def get_state_lengths (self, sequence):
-		length = []
-		for i in range(10):
-			length.append (0)
-		for entry in sequence:
-			length[entry] += 1
+	# # Function: get_average_length
+	# # ----------------------------
+	# # average number of states
+	# def get_state_lengths (self, sequence):
+	# 	length = []
+	# 	for i in range(10):
+	# 		length.append (0)
+	# 	for entry in sequence:
+	# 		length[entry] += 1
 
-		return length
+	# 	return length
 
-
-	# Function: get_rep_for_classifier
-	# --------------------------------
-	# takes in a feature vector for 'gesture', 
-	def get_rep_for_classifier (self, gesture):
-		rep = []
-		for gesture_type, hmm in self.hmms.items():
-			sequence = hmm.predict (gesture)
-			# rep += list (sequence)			#the sequence itself
-			rep.append(self.get_num_changes (sequence))	#number of changes between states
-			rep += self.get_state_lengths (sequence)
-			rep.append(hmm.score (gesture))				#score
-		return rep
 
 
 	# Function: train_classifier
@@ -389,14 +389,12 @@ class Gesture_Recognizer:
 			total_score += prediction_prob
 			if prediction_prob < 0.9:
 				print "Exception: true_label = ", true_label
-				for i, c_i in classes:
+				for i, c_i in enumerate(classes):
 					c_i_score = prediction_probs[i]
 					print "	", c_i, ": ", i
 
 		avg_score = total_score / float(len(self.testing_examples))
 		print "average score: ", avg_score
-
-
 
 
 	# Function: load_model
@@ -420,6 +418,8 @@ class Gesture_Recognizer:
 
 
 
+
+
 	########################################################################################################################
 	##############################[ --- Using Classifier --- ]##############################################################
 	########################################################################################################################
@@ -430,22 +430,32 @@ class Gesture_Recognizer:
 	def classify_gesture (self, gesture):
 
 		### Step 1: get feature_representation ###
-		classifier_rep = self.get_rep_for_classifier (gesture)
+		#--- gesture being passed in is consistently different ---#
+		classifiable_rep = self.get_classifiable_rep (gesture)
+		print gesture.get_hmm_rep ()
+		print classifiable_rep
+
 
 		### Step 2: have the classifier make predictions ###
-		print classifier_rep
-		prediction = self.classifier.predict ([classifier_rep])
-		prob_scores = self.classifier.predict_proba ([classifier_rep])
+		prediction = self.classifier.predict (classifiable_rep)[0]
+		prediction_probs = self.classifier.predict_proba (classifiable_rep)[0]
 
 		### Step 3: sort the probability scores ###
-		print prob_scores
+		classes = list(self.classifier.classes_)
+		index = classes.index (prediction)
+		prediction_prob = prediction_probs [index]
+		print_message ("Best Match: " + str(prediction) + " | Probability: " + str(prediction_prob))
+		for i, c_i in enumerate(classes):
+			print ' -', c_i, ': ', prediction_probs[i]
+
+		if prediction_prob > self.prediction_prob_threshold:
+			return (prediction, prediction_prob)
 
 
-	########################################################################################################################
-	##############################[ --- Evaluating Classifier --- ]#########################################################
-	########################################################################################################################
 
-	# Function: evaluate_classif
+
+
+
 
 
 
