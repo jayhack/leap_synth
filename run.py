@@ -62,7 +62,12 @@ class Leap_Synth:
     # removes the listener from the controller
     def __del__ (self):
 
+        ### Step 1: turn off the max patch ###
+        self.max_interface.send_message ('stop', None, None)
+
+        ### Step 2: remove leap listener ###        
         self.controller.remove_listener(self.listener)
+
 
     # Function: get_frame
     # -------------------
@@ -292,6 +297,34 @@ class Leap_Synth:
 
 
 
+    # Function: get_position_and_orientation
+    # --------------------------------------
+    # given a frame, this returns the (palm_position, palm_orientation) if we observe
+    # a fist (0 fingers visible); (None, None) otherwise
+    def get_position_and_orientation (self, frame):
+
+        ### Step 1: peace out if there are no hands ###
+        hands = frame.hands
+        if len(hands) == 0:
+            return (None, None)
+
+        ### Step 2: peace out if there are any fingers (not a fist) ###
+        fingers = hands[0].fingers
+        if len (fingers) > 0:
+            return (None, None)
+
+        ### Step 3: get position and orientation ###
+        hand = hands[0]
+        palm_position   = hands[0].palm_position
+        position        = (palm_position[0], palm_position[1], palm_position[2])
+        palm_normal     = hands[0].palm_normal
+        orientation     = (palm_normal[0], palm_normal[1], palm_normal[2])
+
+        return (position, orientation)
+
+
+
+
     # Function: synth_main
     # --------------------
     # maintains a 70-frame gesture and tries to classify it
@@ -303,6 +336,8 @@ class Leap_Synth:
         observed_gesture = Gesture ()
 
         
+        self.max_interface.send_message ('start', None, None)
+
 
         ### Step 2: enter main loop ###
         while (True):
@@ -311,11 +346,13 @@ class Leap_Synth:
             frame = self.get_frame ()
             observed_gesture.add_frame (frame)
 
-            if len(frame.hands) > 0:
-                pos = frame.hands[0].palm_position   
-                print "(X, Y, Z): ", pos[0], ", ", pos[1], ", ", pos[2]
+            ### Step 2: get position and orientation (returns (None, None) if not a fist) ###
+            (palm_position, palm_orientation) = self.get_position_and_orientation (frame)
+            if palm_position:
+                print palm_position, " | ", palm_orientation
 
-            ### Step 2: Get the gesture, if appropriate ###nn
+            ### Step 3: Get the gesture, if appropriate ###
+            send_gesture = None
             if observed_gesture.is_full ():
 
                 classification_results = self.gesture_recognizer.classify_gesture (observed_gesture)
@@ -326,15 +363,10 @@ class Leap_Synth:
                     observed_gesture.clear ()
 
 
-                    ### Step 3: If the hand exists, add continuous output on its coords ###
-                    coordinates = None
-                    if len (frame.hands) > 0:
-                        position = frame.hands[0].palm_position
-                        coordinates = (position[0], position[1], position[2])
 
 
-                    ### Step 4: Send message to max ###
-                    self.max_interface.send_message (prediction, coordinates)
+            ### Step 4: Send message to max ###
+            self.max_interface.send_message (send_gesture, palm_position, palm_orientation)
 
 
 
