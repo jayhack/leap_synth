@@ -311,6 +311,9 @@ class Leap_Synth:
             frame = self.get_frame ()
             observed_gesture.add_frame (frame)
 
+            if len(frame.hands) > 0:
+                pos = frame.hands[0].palm_position   
+                print "(X, Y, Z): ", pos[0], ", ", pos[1], ", ", pos[2]
 
             ### Step 2: Get the gesture, if appropriate ###nn
             if observed_gesture.is_full ():
@@ -323,15 +326,15 @@ class Leap_Synth:
                     observed_gesture.clear ()
 
 
-            ### Step 3: If the hand exists, add continuous output on its coords ###
-            # coordinates = None
-            # if len (frame.hands) > 0:
-                # position = frame.hands[0].palm_position
-                # coordinates = (position[0], position[1], position[2])
+                    ### Step 3: If the hand exists, add continuous output on its coords ###
+                    coordinates = None
+                    if len (frame.hands) > 0:
+                        position = frame.hands[0].palm_position
+                        coordinates = (position[0], position[1], position[2])
 
 
-            ### Step 4: Send message to max ###
-            # self.max_interface.send_message (gesture, coordinates)
+                    ### Step 4: Send message to max ###
+                    self.max_interface.send_message (prediction, coordinates)
 
 
 
