@@ -274,10 +274,12 @@ class Gesture_Recognizer:
 	def get_classifiable_rep (self, gesture):
 
 		classifiable_rep = []
+
+		hmm_rep = gesture.get_hmm_rep ()
 		for gesture_type, hmm in self.hmms.items ():
 
-			hmm_score 		= hmm.score 	(gesture.get_hmm_rep ())
-			hmm_sequence 	= hmm.predict 	(gesture.get_hmm_rep ())
+			hmm_score 		= hmm.score 	(hmm_rep)
+			hmm_sequence 	= hmm.predict 	(hmm_rep)
 
 			### --- Note: for now, just go with scores? --- ###
 			classifiable_rep.append (hmm_score)
@@ -391,7 +393,7 @@ class Gesture_Recognizer:
 				print "Exception: true_label = ", true_label
 				for i, c_i in enumerate(classes):
 					c_i_score = prediction_probs[i]
-					print "	", c_i, ": ", i
+					print "	", c_i, ": ", prediction_probs[i]
 
 		avg_score = total_score / float(len(self.testing_examples))
 		print "average score: ", avg_score
@@ -432,8 +434,6 @@ class Gesture_Recognizer:
 		### Step 1: get feature_representation ###
 		#--- gesture being passed in is consistently different ---#
 		classifiable_rep = self.get_classifiable_rep (gesture)
-		print gesture.get_hmm_rep ()
-		print classifiable_rep
 
 
 		### Step 2: have the classifier make predictions ###
@@ -444,9 +444,9 @@ class Gesture_Recognizer:
 		classes = list(self.classifier.classes_)
 		index = classes.index (prediction)
 		prediction_prob = prediction_probs [index]
-		print_message ("Best Match: " + str(prediction) + " | Probability: " + str(prediction_prob))
-		for i, c_i in enumerate(classes):
-			print ' -', c_i, ': ', prediction_probs[i]
+		# print_message ("Best Match: " + str(prediction) + " | Probability: " + str(prediction_prob))
+		# for i, c_i in enumerate(classes):
+			# print ' -', c_i, ': ', prediction_probs[i]
 
 		if prediction_prob > self.prediction_prob_threshold:
 			return (prediction, prediction_prob)
