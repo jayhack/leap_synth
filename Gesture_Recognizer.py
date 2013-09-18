@@ -1,4 +1,4 @@
-#!/Library/Frameworks/Python.framework/Versions/2.7/bin/python
+#!/usr/bin/python
 # *------------------------------------------------------------ *
 # * Class: Gesture_Recognizer
 # * -------------------------
@@ -11,6 +11,7 @@
 import os
 import sys
 import pickle
+import random
 from operator import itemgetter 
 from collections import defaultdict
 
@@ -22,35 +23,44 @@ from HMM_Backend import HMM_Backend
 
 #--- SKLearn ---
 import numpy as np
-from sklearn import mixture
 from sklearn.hmm import GaussianHMM
-from sklearn.mixture import GMM
 from sklearn.linear_model import LogisticRegression
+from sklearn import cross_validation
 
 
 class Gesture_Recognizer:
 
 	#--- Filenames ---
-	app_name = 'basketball'
-	data_dir = os.path.join (os.getcwd(), 'data/' + app_name)
-	classifiers_dir = os.path.join (os.getcwd (), 'classifiers/' + app_name)
-	classifier_filename = os.path.join(classifiers_dir, 'classifier.pkl')
-	classifier_backend_filename = os.path.join (classifiers_dir, 'classifier_backend.pkl')
+	data_dir 				= os.path.join 	(os.getcwd(), 'data/')
+	classifiers_dir 		= os.path.join 	(os.getcwd (), 'classifiers/')
+	hmms_filename 			= os.path.join	(classifiers_dir, 'hmms.pkl')
+	classifier_filename 	= os.path.join 	(classifiers_dir, 'classifier.pkl')
 
 
 	#--- Recording ---
-	is_recording = False			# boolean for wether we are recording or not
+	is_recording 		= False		# boolean for wether we are recording or not
 	num_frames_recorded = False		# number of frames we have recorded so far
-	recording_gesture = None		# the gesture we will record to.
+	recording_gesture 	= None		# the gesture we will record to.
 
 
-	#--- Training/Testing: examples ---
-	gesture_types = []
-	gestures = {}			#dict mapping gesture_type -> list of gestures (lists of feature vectors)
+	#--- Data ---
+		#--- Gesture objects ---
+	gesture_types = []		# list of all types of gestures
+	gestures = {}			# dict: gesture_type -> list of gesture objects
+		#--- Classifiable examples ---
+	all_examples = []		# list of all examples of gestures in appropriate format for LR. (features, label) tuples.
+	training_examples = []	# list of training examples for the classifier. (features, label) tuples.
+	testing_examples = []	# list of all testing examples for the classifier. (features, label) tuples.
 
-	#--- Classification: Gaussian HMMS ---
-	hmms = {}				#dict mapping gesture_type -> hmm
-	hmmbackend = None		#logistic regression curve...? will this work...?
+
+	#--- Classifiers/Probabilistic Modesl ---
+	hmms = {}							# dict mapping gesture_type -> gaussian hmm
+	classifier = LogisticRegression ()	# softmax regression classifier
+
+
+	#--- Parameters ---
+	num_hmm_states 					= 7		# number of states in HMM
+	training_examples_proportion	= 0.75	# amount of data to train on
 
 
 
@@ -62,32 +72,73 @@ class Gesture_Recognizer:
 		pass
 
 
+
 	########################################################################################################################
-	##############################[ --- Loading/Saving Gestures --- ]#######################################################
+	##############################[ --- Data Filename Management --- ]###########################################################
 	########################################################################################################################
+
+	# Function: get_gesture_types
+	# ---------------------------
+	# fills in self.gesture_types by observing all the directories
+	# in self.data_dir, with the exception of .DS_Store
+	def get_gesture_types (self):
+		self.gesture_types = os.listdir (self.data_dir)
+		if '.DS_Store' in self.gesture_types:
+			self.gesture_types.remove ('.DS_Store')
+
+
+	# Function: get_gesture_dirs
+	# --------------------------
+	# fills self.gesture_dirs s.t. each gesture_type maps to it's own directory.
+	# call after 'self.get_gesture_types ()'
+	def get_gesture_dirs (self):
+
+		self.gesture_dirs = {gesture_type:os.path.join(self.data_dir, gesture_type) for gesture_type in self.gesture_types}
+
+
+	# Function: make_gesture_dir
+	# --------------------------
+	# given a gesture name, this will create a data directory for it
+	# and add it to self.gesture_dirs.
+	def make_gesture_dir (self, gesture_type):
+
+		### --- make a data directory if it doesn't exist already --- ###
+		if not gesture_type in self.gesture_dirs.keys ():
+			gesture_dir = os.path.join(self.data_dir, gesture_type)
+			os.mkdir (gesture_dir)
+			self.gesture_dirs[gesture_type] = gesture_dir
+
+		### --- do nothing otherwise --- ###
+		else:
+			pass
+
 
 	# Function: get_save_filename
 	# ---------------------------
 	# given a gesture name, this will return the path of where to save it
 	def get_save_filename (self, gesture_name):
 
-		all_dirs = os.listdir (self.data_dir)
-
-		### Step 1: get the correct directory to place this example into ###
-		gesture_dir = os.path.join (self.data_dir, gesture_name)
-		if not os.path.exists (gesture_dir):
-			os.mkdir (gesture_dir)
-
-		### Step 2: make the filename - current # of examples + 1###
-		all_examples = os.listdir (gesture_dir)
+		### Step 1: make the filename - current # of examples + 1 ###
+		all_examples = os.listdir (self.gesture_dirs[gesture_name])
 		if len(all_examples) == 0:
 			example_index = 1
 		else:
 			example_index = len(all_examples) + 1
 
-		### Step 3: return gesture_dir/[n].gesture as the save filename ###
+		### Step 2: return gesture_dir/[n].gesture as the save filename ###
 		return os.path.join (gesture_dir, str(example_index) + '.gesture')
 
+
+
+
+
+
+
+
+
+	########################################################################################################################
+	##############################[ --- Loading/Saving Gestures --- ]#######################################################
+	########################################################################################################################
 
 	# Function: save_gesture 
 	# ----------------------
@@ -98,58 +149,65 @@ class Gesture_Recognizer:
 		save_filename = self.get_save_filename (gesture.name)
 		gesture.pickle_self (save_filename)
 		print_status ("Gesture Recognizer", "Saved recorded gesture at " + save_filename)
-		print_inner_status ("Final # of frames", str(len(gesture.O)))
 		print gesture.O
 
 
-	# Function: get_gestures
-	# ----------------------
+	# Function: load_gestures_of_type
+	# -------------------------------
 	# given a filepath and a gesture type, this will load all the gestures from it
-	def get_gestures (self, gesture_dir, gesture_type):
+	# into self.gestures
+	def load_gestures_of_type (self, gesture_type):
 
+		### Step 1: initialize list of gestures of this type ###
 		self.gestures[gesture_type] = []
-		example_filenames = [os.path.join (gesture_dir, f) for f in os.listdir (gesture_dir)]
-		for example_filename in example_filenames:
 
-			### Step 1: create the gesture ###
-			gesture = Gesture (observations_filepath=example_filename)
+		### Step 2: get all filenames from the appropriate gesture_dir ###
+		gesture_filenames = [os.path.join (self.gesture_dirs[gesture_type], g) for g in os.listdir (self.gesture_dirs[gesture_type])]
 
-			### Step 2: make sure it is full/clean ###
-			if not gesture.is_full ():
+		### Step 3: for each filename, load in a gesture from it and add to list ###
+		for gesture_filename in gesture_filenames:
+
+			### --- create the gesture --- ###
+			new_gesture = Gesture (name=gesture_type, observations_filepath=gesture_filename)
+
+			### --- make sure it is full/clean --- ###
+			if not new_gesture.is_full ():
 				print_error ("Loading Gestures", "Encountered a gesture that is not yet full")
 
+			### --- add to the list of gestures --- ###
+			self.gestures[gesture_type].append (new_gesture)
 
-			### Step 3: add to the list of gestures ###
-			self.gestures[gesture_type].append (gesture.get_feature_rep ())
 
-
-	# Function: load_data
-	# -------------------
+	# Function: load_gestures
+	# -----------------------
 	# loads in training examples from the data directory
-	# fills self.gestures, self.positions
-	def load_data (self):
+	# fills self.gestures in entirety
+	def load_gestures (self):
 
-		### Step 1: get all gesture types
-		self.gesture_types = os.listdir (self.data_dir)
+		### Step 1: initialize self.gestures ###
+		self.gestures = {}
 
-		### Step 2: for each gesture type, initialize list of examples to empty... ###
+		### Step 2: get all gesture types ###
+		self.get_gesture_types ()
+
+		### Step 3: get all gesture dirs ###
+		self.get_gesture_dirs () 
+
+		### Step 4: for each gesture_type, load in all gestures ###
 		for gesture_type in self.gesture_types:
-
-			gesture_dir = os.path.join (self.data_dir, gesture_type)
-
-			print_inner_status ("Gesture Recognizer (Load Data)", "Loading " + str(gesture_dir))
-
-			self.get_gestures (gesture_dir, gesture_type)
+			print_inner_status ("Gesture Recognizer (load_gestures)", "Loading gestures of type " + str(gesture_type))
+			self.load_gestures_of_type (gesture_type)
 
 
 	# Function: print_data_stats
 	# --------------------------
 	# prints information on the loaded training examples
-	def print_data_stats (self):
+	def print_gestures_stats (self):
 
-		print_message ("Training Example Counts: ")
+		print_message ("Counts of 'Gesture' objects by type: ")
 		for key, value in self.gestures.items ():
-			print "	", key, ": ", len(value)
+			print "	- ", key, ": ", len(value)
+
 
 
 
@@ -159,7 +217,105 @@ class Gesture_Recognizer:
 
 
 	########################################################################################################################
-	##############################[ --- Building/Managing Classifier --- ]##################################################
+	##############################[ --- Getting HMMs --- ]##################################################################
+	########################################################################################################################
+
+	# Function: get_hmms
+	# ------------------
+	# for each gesture_type, this will train an hmm
+	def get_hmms (self):
+
+		for gesture_type in self.gesture_types:
+
+			print_status ("Get_Hmms", "Fitting for gesture_type: " + gesture_type)
+			### Step 1: fill hmm_examples appropriately ###
+			hmm_examples = []
+			for gesture in self.gestures[gesture_type]:
+				hmm_rep = gesture.get_hmm_rep ()
+				hmm_examples.append (hmm_rep)
+
+			### Step 2: fit parameters for the hmm ###
+			hmm = GaussianHMM (self.num_hmm_states)
+			hmm.fit (hmm_examples)
+
+			### Step 3: store the hmm in self.hmms ###
+			self.hmms[gesture_type] = hmm
+
+			print_inner_status (gesture_type, "predicted the following sequences: (score: sequence)")
+			for example in hmm_examples:
+				print "		", hmm.score (example), ": ", hmm.predict (example)
+
+
+
+
+
+
+	########################################################################################################################
+	##############################[ --- Getting Testing/Training Examples --- ]#############################################
+	########################################################################################################################
+
+	# Function: get_classifiable_rep
+	# ------------------------------
+	# given a Gesture object, this will produce (and return) a feature-vector 
+	# representation that can be passed to a LR classifier for training/classification
+	def get_classifiable_rep (self, gesture):
+
+		classifiable_rep = []
+		for gesture_type, hmm in self.hmms.items ():
+
+			hmm_score 		= hmm.score 	(gesture.get_hmm_rep ())
+			hmm_sequence 	= hmm.predict 	(gesture.get_hmm_rep ())
+			
+			### --- Note: for now, just go with scores? --- ###
+			classifiable_rep.append (hmm_score)
+
+		return classifiable_rep
+
+
+	# Function: get_all_examples
+	# --------------------------
+	# converts self.gestures -> self.all_examples
+	def get_all_examples (self):
+
+		### Step 1: intialize self.all_examples ###
+		self.all_examples = []
+
+		### Step 2: for each gesture type, convert to appropriate format and add to list ###
+		for gesture_type, gestures in self.gestures.items ():
+			for gesture in gestures:
+
+				classifiable_rep = self.get_classifiable_rep (gesture)
+				self.all_examples.append ((classifiable_rep, gesture_type))
+
+		random.shuffle(self.all_examples)
+
+
+ 	# Function: split_training_testing_examples
+ 	# -----------------------------------------
+ 	# splits self.all_examples into self.training_examples and self.testing_examples
+ 	def split_training_testing_examples (self):
+
+ 		num_training_examples = int(self.training_examples_proportion * len(self.all_examples))
+ 		self.training_examples = self.all_examples[:num_training_examples]
+ 		self.testing_examples = self.all_examples[num_training_examples:]
+ 		self.print_examples_stats ()
+
+ 	# Function: print_examples_stats
+ 	# ------------------------------
+ 	# prints stats on training/testing examples
+ 	def print_examples_stats (self):
+ 		
+ 		print "	- Training: ", len(self.training_examples)
+ 		print "	- Testing: ", len(self.testing_examples)
+ 		print "	- Total: ", len(self.all_examples)
+
+
+
+
+
+
+	########################################################################################################################
+	##############################[ --- Training/Evaluating Classifier --- ]##################################################
 	########################################################################################################################
 
 	# Function: get_num_changes
@@ -174,6 +330,7 @@ class Gesture_Recognizer:
 			cur = entry
 		return num_changes
 
+
 	# Function: get_average_length
 	# ----------------------------
 	# average number of states
@@ -186,9 +343,11 @@ class Gesture_Recognizer:
 
 		return length
 
-	# Function: get_sequence
-	# ----------------------
-	def get_rep_for_hmm_backend (self, gesture):
+
+	# Function: get_rep_for_classifier
+	# --------------------------------
+	# takes in a feature vector for 'gesture', 
+	def get_rep_for_classifier (self, gesture):
 		rep = []
 		for gesture_type, hmm in self.hmms.items():
 			sequence = hmm.predict (gesture)
@@ -199,73 +358,45 @@ class Gesture_Recognizer:
 		return rep
 
 
-	# Function: train_model
-	# ---------------------
-	# trains the Gaussian HMM and saves it
-	def train_model (self):
+	# Function: train_classifier
+	# --------------------------
+	# Trains the classifier and saves it
+	def train_classifier (self):
 
-		n_components = 10
-
-		### Step 1: get the mixture model ###
-		for gesture_type, gestures in self.gestures.items ():
-			
-			for index, gesture in enumerate(gestures):
-				print "--- Gesture (", index, ", ", gesture_type, ") ---"
-				print gesture, "\n"
-
-			model = GaussianHMM (n_components)
-
-			### Step 1: get the mixture model ###
-			model.fit (gestures)
-			parameters = model.get_params ()	
-			startprob = model.startprob_
-			transmat = model.transmat_
-			print "------ ORIGINAL STARTPROB / TRANSMAT -----"
-			print startprob
-			print transmat
-			#shit... its getting these correctly...
-			for gesture in gestures:
-				print model.score (gesture)
-
-			### Step 2: have it predict the correct sequences ###
-			# sequences = []
-			# for gesture in gestures:
-				# sequence = model.predict (gesture)
-				# sequences.append (sequence)
-			# for sequence in sequences:
-				# print sequence
-			# hmm_backend = HMM_Backend (sequences, n_components)
-			# startprob = hmm_backend.startprob
-			# transmat = hmm_backend.follow_prob
+		X = [ex[0] for ex in self.training_examples]
+		y = [ex[1] for ex in self.training_examples]
+		self.classifier.fit (X, y)
 
 
-			# model.set_params(params)
+	# Function: evaluate_classifier 
+	# -----------------------------
+	# evaluates current classifier on test_data
+	def evaluate_classifier (self):
+
+		print_message ("Evaluating classifier on test data")
+		total_score = 0.0
+
+		for ex in self.testing_examples:
+
+			features = ex[0]
+			true_label = ex[1]
+			prediction 			= self.classifier.predict (features)[0]
+			prediction_probs 	= self.classifier.predict_proba (features)[0]
+
+			classes = list(self.classifier.classes_)
+			index = classes.index (prediction)
+			prediction_prob = prediction_probs [index]
+			total_score += prediction_prob
+			if prediction_prob < 0.9:
+				print "Exception: true_label = ", true_label
+				for i, c_i in classes:
+					c_i_score = prediction_probs[i]
+					print "	", c_i, ": ", i
+
+		avg_score = total_score / float(len(self.testing_examples))
+		print "average score: ", avg_score
 
 
-
-			self.hmms[gesture_type] = model
-
-
-		sequences = []
-		labels = []		
-		for gesture_type, gestures in self.gestures.items ():
-
-			for gesture in gestures:
-				
-				### Step 2: get the backend cuz sklearn wont FIT ITS OWN FUCKING PARAMETERS ###
-				rep = self.get_rep_for_hmm_backend (gesture)
-				print rep
-
-				sequences.append (rep)
-				labels.append (gesture_type)
-
-		self.hmm_backend = LogisticRegression ()
-		self.hmm_backend.fit (sequences, labels)
-		print self.hmm_backend.get_params ()
-		for (sequence, label) in zip(sequences, labels):
-			print "[", label, "]: ", self.hmm_backend.predict (sequence)
-
-		self.save_model ()
 
 
 	# Function: load_model
@@ -273,8 +404,8 @@ class Gesture_Recognizer:
 	# loads the model from a pickled file
 	def load_model (self):
 
-		self.hmms = pickle.load (open(self.classifier_filename, 'r'))
-		self.hmm_backend = pickle.load (open(self.classifier_backend_filename, 'r'))
+		self.classifier 	= pickle.load (open(self.classifier_filename, 'r'))
+		self.hmms 			= pickle.load (open(self.hmms_filename, 'r'))
 
 
 	# Function: save_model
@@ -282,12 +413,8 @@ class Gesture_Recognizer:
 	# loads the model from a pickled file
 	def save_model (self):
 
-		pickle.dump (self.hmms, open(self.classifier_filename, 'w'))
-		pickle.dump (self.hmm_backend, open(self.classifier_backend_filename, 'w'))
-
-
-
-
+		pickle.dump (self.classifier, open(self.classifier_filename, 'w'))
+		pickle.dump (self.hmms, open(self.hmms_filename, 'w'))
 
 
 
@@ -297,67 +424,59 @@ class Gesture_Recognizer:
 	##############################[ --- Using Classifier --- ]##############################################################
 	########################################################################################################################
 
-	# Function: get_scores
-	# --------------------
-	# given a gesture, this will return a sorted list of (label, score). does not
-	# threshold or anything
-	def get_scores (self, feature_rep):
-
-		scores = []
-		hmm_backend_rep = self.get_rep_for_hmm_backend (feature_rep)
-		print hmm_backend_rep
-		probabilities = self.hmm_backend.predict_proba (hmm_backend_rep)
-		for c, p in zip(self.hmm_backend.classes_, probabilities[0]):
-			scores.append ((c, p))
-		
-		# for gesture_type, hmm in self.hmms.items ():
-			# scores.append ((gesture_type, hmm.score (feature_rep)))
-
-		scores = sorted(scores, key=itemgetter(1), reverse=True)
-		# print "--- Classification Outcome ---"
-		# for score in scores:
-			# print "	- ", score[0], ": ", score[1]
-		return scores
-
-
 	# Function: classify_gesture
 	# --------------------------
-	# returns the name of a gesture if it works, 'none' otherwise
-	def classify_gesture (self, observed_gesture):
-
-		threshold = 0.5
-		# print_message ("Classify Gesture:")
+	# given a Gesture object, this will return the sorted scores from our classifier
+	def classify_gesture (self, gesture):
 
 		### Step 1: get feature_representation ###
-		feature_rep = observed_gesture.get_feature_rep ()
+		classifier_rep = self.get_rep_for_classifier (gesture)
 
-		### Step 2: get the scores ###
-		scores = self.get_scores (feature_rep)
-		print scores
+		### Step 2: have the classifier make predictions ###
+		print classifier_rep
+		prediction = self.classifier.predict ([classifier_rep])
+		prob_scores = self.classifier.predict_proba ([classifier_rep])
 
-		### Step 3: decide if it qualifies as any of them ###
-		return_val = None
-		if scores[0][1] > threshold:
-			# print "--- Classification Outcome ---"
-			# for score in scores:
-				# print "	- ", score[0], ": ", score[1]
-			# print "best sequences: "
-			# for name, model in self.hmms.items ():
-				# print "	", name, ": ", model.predict (feature_rep)
-			return_val = scores[0][0]
+		### Step 3: sort the probability scores ###
+		print prob_scores
 
 
-		# print_message ("Classification: " + str(return_val))
-		return return_val
+	########################################################################################################################
+	##############################[ --- Evaluating Classifier --- ]#########################################################
+	########################################################################################################################
+
+	# Function: evaluate_classif
 
 
 
 if __name__ == "__main__":
 
+	print_message ("##### Gesture Recognizer - Train and Evaluate #####")
+
 	gr = Gesture_Recognizer ()
-	gr.load_data ()
-	gr.print_data_stats ()
-	gr.train_model ()
+
+	### Step 1: load in all the gestures ###
+	print_message ("Loading gestures")
+	gr.load_gestures ()
+	gr.print_gestures_stats ()
+
+	### Step 2: train the HMMs ###
+	print_message ("Getting hmms")
+	gr.get_hmms ()
+
+	### Step 3: get examples ###
+	print_message ("Getting examples for training/testing")
+	gr.get_all_examples ()
+	gr.split_training_testing_examples ()
+
+	### Step 4: train the classifier and save the entire model ###
+	gr.train_classifier ()
+	gr.save_model ()
+
+	### Step 5: evaluate the classifier ###
+	gr.evaluate_classifier ()
+
+
 
 
 

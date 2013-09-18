@@ -52,6 +52,8 @@ class Max_Interface:
 			'Swirl': 'basic_beat',
 			'Left': 'squeak',
 			'Right': 'bass',
+			'Swish': 'swish',
+			'Wave': 'crowd'
 		}
 
 		return message_map[gesture_name]
@@ -67,10 +69,12 @@ class Max_Interface:
 				return False
 
 		if self.last_sent == 'Up':
+			if gesture == 'Swish':
+				return True
+
+		if self.last_sent == 'Swish':
 			if gesture == 'Flux':
 				return True
-			else:
-				return False
 
 		if self.last_sent == 'Flux':
 			if gesture == 'Swirl':
@@ -84,8 +88,11 @@ class Max_Interface:
 			if gesture == 'Right':
 				return True
 
-		else:
-			return False
+		if self.last_sent == 'Right':
+			if gesture == 'Wave':
+				return True
+
+		return False
 
 
 	# Function: send_gesture
