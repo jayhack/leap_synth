@@ -15,7 +15,7 @@ class Max_Interface:
 
 	#--- Interface/Protocol Parameters ---
 	host = 'localhost'
-	port = 7400
+	port = 7401
 	butf = 1024
 	addr = (host, port)
 
@@ -69,7 +69,7 @@ class Max_Interface:
 
 		### Step 5: send it via UDP to max ###
 		if (self.UDPSock.sendto(message, self.addr)):
-			print_inner_status ("Max_Interface (Send Gesture)", "Sent gesture " + str(message))
+			# print_inner_status ("Max_Interface (Send Gesture)", "Sent gesture " + str(message))
 			pass
 		else:
 			print_error ("Max Interface", "Failed to send gesture" + str(message) + " to Max")

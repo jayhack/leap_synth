@@ -63,7 +63,7 @@ class Leap_Synth:
     def __del__ (self):
 
         ### Step 1: turn off the max patch ###
-        self.max_interface.send_message ('stop', None, None)
+        self.max_interface.send_message ('Stop', None, None)
 
         ### Step 2: remove leap listener ###        
         self.controller.remove_listener(self.listener)
@@ -329,17 +329,16 @@ class Leap_Synth:
     # --------------------
     # maintains a 70-frame gesture and tries to classify it
     def synth_main (self):
+        
+        ### Step 1: start the max patch ###
+        self.max_interface.send_message ('Start', None, None)
 
-        ### Step 1: setup ###
-        self.gesture_recognizer.load_model ()
+        ### Step 2: initialize local data ###
         print_message ("Entering Main Loop: Continuous Gesture Recognition")
+        self.gesture_recognizer.load_model ()
         observed_gesture = Gesture ()
 
-        
-        self.max_interface.send_message ('start', None, None)
-
-
-        ### Step 2: enter main loop ###
+        ### Step 3: enter main loop ###
         while (True):
 
             ### Step 1: add the current frame to observed_gesture ###
@@ -348,8 +347,6 @@ class Leap_Synth:
 
             ### Step 2: get position and orientation (returns (None, None) if not a fist) ###
             (palm_position, palm_orientation) = self.get_position_and_orientation (frame)
-            if palm_position:
-                print palm_position, " | ", palm_orientation
 
             ### Step 3: Get the gesture, if appropriate ###
             send_gesture = None
@@ -360,9 +357,8 @@ class Leap_Synth:
                     prediction = classification_results [0]
                     prediction_prob = classification_results [1]
                     print_message("Prediction: " + str(prediction) + " | Probability: " + str(prediction_prob))
+                    send_gesture = prediction
                     observed_gesture.clear ()
-
-
 
 
             ### Step 4: Send message to max ###
