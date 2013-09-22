@@ -19,10 +19,13 @@ class Max_Interface:
 	butf = 1024
 	addr = (host, port)
 
-	last_sent = None
-
 	#--- Objects for Communication ---
 	UDPSock = None
+
+
+	########################################################################################################################
+	########################################[ --- Constructor/Destructor --- ] #############################################
+	########################################################################################################################		
 
 
 	# Function: Constructor
@@ -42,36 +45,52 @@ class Max_Interface:
 
 
 
+
+
+	########################################################################################################################
+	########################################[ --- Sending Messages --- ] ###################################################
+	########################################################################################################################		
+
+
 	# Function: send_gesture
 	# ----------------------
-	# notifies max of the occurence of a given gesture
-	def send_message (self, gesture_name, palm_coordinates, palm_orientation):
+	# sends a message to max denoting the occurence of a gesture
+	# Format: "Gesture [Gesture Type]"
+	def send_gesture (self, gesture_type):
 
-		args = []
+		message = "Gesture " + str(gesture_type)
+		self.send_message (message)
 
-		### Step 1: peace out if there are no gestures, coordinates or orientations to report on ###
-		if (not gesture_name) and (not palm_coordinates) and (not palm_orientation):
-			return
 
-		### Step 2: add the gesture to message ###
-		if not gesture_name:
-			gesture_name = 'NONE'
-		args.append (gesture_name)
+	# Function: send_hand_state
+	# -------------------------
+	# sends a message to max denoting the current state of the hand
+	# Format: "Hand_State [(palm coordinates) x, y, z] [(palm orientation) yaw, pitch, roll] [number of fingers]"
+	def send_hand_state (self, hand):
 
-		### Step 3: add the coordinates/orientation to message ###
-		if palm_coordinates:
-			args.append (' '.join([str(c) for c in palm_coordinates]))
-		if palm_orientation:
-			args.append (' '.join([str(c) for c in palm_orientation]))			
+		message = "Hand_State "
 
-		### Step 4: get the message string ###
-		message = ' '.join(args)
+		#--- Palm Coordinates ---
+		position = hand.palm_position
+		for coord in position:
+			message += " " + str(coord)
 
-		### Step 5: send it via UDP to max ###
-		if (self.UDPSock.sendto(message, self.addr)):
-			# print_inner_status ("Max_Interface (Send Gesture)", "Sent gesture " + str(message))
-			pass
-		else:
+		#--- Palm Orientation ---
+		orientation = hand.palm_orientation
+		for coord in orientation:
+			message += " " + str(coord)
+
+		#--- Send the message ---
+		self.send_message (message)
+
+
+	# Function: send_gesture
+	# ----------------------
+	# notifies max of the occurence of a given gesture via a message sent on 
+	# UDP port
+	def send_message (self, message):
+
+		if not self.UDPSock.sendto(message, self.addr):
 			print_error ("Max Interface", "Failed to send gesture" + str(message) + " to Max")
 
 
