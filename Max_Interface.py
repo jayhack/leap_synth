@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # *------------------------------------------------------------ *
 # * Class: Max_Interface
 # * ---------------------
@@ -5,8 +6,14 @@
 # *
 # *  
 # *------------------------------------------------------------ *
+#--- Standard ---
+import string
+
 #--- UDP ---
 from socket import *
+
+#--- JSON ---
+import json
 
 #--- My Files ---
 from common_utilities import print_message, print_error, print_status, print_inner_status
@@ -58,9 +65,8 @@ class Max_Interface:
 	# Format: "Gesture [Gesture Type]"
 	def send_gesture (self, gesture_type):
 
-		message = "Gesture " + str(gesture_type)
-		self.send_message (message)
-
+		gesture_message = "Gesture " + str(gesture_type)
+		self.send_message (gesture_message)
 
 	# Function: send_hand_state
 	# -------------------------
@@ -68,26 +74,22 @@ class Max_Interface:
 	# Format: "Hand_State [(palm coordinates) x, y, z] [(palm orientation) yaw, pitch, roll] [number of fingers]"
 	def send_hand_state (self, hand):
 
-		message = "Hand_State "
+		#--- Initialize Dict ---
+		hand_state_dict = {}
 
-		#--- Palm Coordinates ---
-		position = hand.palm_position
-		for coord in position:
-			message += " " + str(coord)
-
-		#--- Palm Orientation ---
-		orientation = hand.palm_orientation
-		for coord in orientation:
-			message += " " + str(coord)
-
-		#--- Send the message ---
-		self.send_message (message)
+		#--- Send Palm Coords ---
+		palm_position = hand.palm_position
+		palm_position_message = "Palm_Position "
+		for coord in palm_position:
+			palm_position_message += str(coord) + " "
+		self.send_message (palm_position_message)
 
 
-	# Function: send_gesture
+
+
+	# Function: send_message
 	# ----------------------
-	# notifies max of the occurence of a given gesture via a message sent on 
-	# UDP port
+	# given a python dict, this will send a max-readable format of it.
 	def send_message (self, message):
 
 		if not self.UDPSock.sendto(message, self.addr):
@@ -95,5 +97,12 @@ class Max_Interface:
 
 
 
+if __name__ == '__main__':
 
+	max_interface = Max_Interface ()
+
+	max_interface.send_gesture ("Start")
+	max_interface.send_gesture ("Swirl")
+	# max_interface.send_message ("Palm_Position 1 2 3")
+	max_interface.send_gesture ("Stop")
 
