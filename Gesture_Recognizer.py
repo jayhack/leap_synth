@@ -19,7 +19,6 @@ from collections import defaultdict
 sys.path.append ('/Users/jayhack/anaconda/lib/python2.7/site-packages/scipy/')
 from common_utilities import print_message, print_error, print_status, print_inner_status
 from Gesture import Gesture
-from HMM_Backend import HMM_Backend
 
 #--- SKLearn ---
 import numpy as np

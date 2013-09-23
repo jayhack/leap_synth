@@ -78,11 +78,13 @@ class Max_Interface:
 		hand_state_dict = {}
 
 		#--- Send Palm Coords ---
-		palm_position = hand.palm_position
-		palm_position_message = "Palm_Position "
-		for coord in palm_position:
-			palm_position_message += str(coord) + " "
-		self.send_message (palm_position_message)
+		# palm_position = hand.palm_position
+		# palm_position_message = "Palm_Position "
+		# for coord in palm_position:
+			# palm_position_message += str(coord) + " "
+		# self.send_message (palm_position_message)
+
+		self.send_message ("Palm_Position 40 40 40")
 
 
 
@@ -103,6 +105,7 @@ if __name__ == '__main__':
 
 	max_interface.send_gesture ("Start")
 	max_interface.send_gesture ("Swirl")
+	max_interface.send_hand_state ("Test")
 	# max_interface.send_message ("Palm_Position 1 2 3")
 	max_interface.send_gesture ("Stop")
 

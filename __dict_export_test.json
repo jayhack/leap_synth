@@ -1,7 +1,0 @@
-{
-	"frog" : "*",
-	"pig" : "*",
-	"horse" : "*",
-	"duck" : "quack quack",
-	"goose" : "*"
-}
