@@ -29,6 +29,19 @@
 		"tags" : "",
 		"boxes" : [ 			{
 				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-120",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 1771.0, 198.0, 34.0, 20.0 ],
+					"text" : "print"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"bgcolor" : [ 0.0, 0.0, 0.0, 1.0 ],
 					"fontface" : 1,
 					"fontname" : "Verdana",
@@ -105,12 +118,13 @@
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
 					"id" : "obj-131",
+					"linecount" : 2,
 					"maxclass" : "message",
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 811.226074, 297.819214, 167.0, 18.0 ],
-					"text" : "paintrect 40 40 60 60 255 0 0"
+					"patching_rect" : [ 811.226074, 297.819214, 167.0, 31.0 ],
+					"text" : "paintrect -174 423 -144 453 255 0 0"
 				}
 
 			}
@@ -124,7 +138,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 954.226074, 135.21611, 57.0, 20.0 ],
-					"text" : "r palm_y"
+					"text" : "r palm_z"
 				}
 
 			}
@@ -202,7 +216,7 @@
 							"architecture" : "x86"
 						}
 ,
-						"rect" : [ 141.0, 134.0, 1230.0, 580.0 ],
+						"rect" : [ 149.0, 424.0, 1230.0, 580.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -308,12 +322,13 @@
 									"fontname" : "Arial",
 									"fontsize" : 12.0,
 									"id" : "obj-525",
+									"linecount" : 2,
 									"maxclass" : "message",
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 442.376007, 407.886108, 178.0, 18.0 ],
-									"text" : "40 40 40"
+									"patching_rect" : [ 442.376007, 407.886108, 178.0, 31.0 ],
+									"text" : "-174.625351 423.304596 301.160431"
 								}
 
 							}
@@ -1070,12 +1085,13 @@
 									"fontname" : "Arial",
 									"fontsize" : 12.0,
 									"id" : "obj-178",
+									"linecount" : 3,
 									"maxclass" : "message",
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 497.159088, 590.184937, 50.0, 18.0 ],
-									"text" : "0"
+									"patching_rect" : [ 497.159088, 590.184937, 50.0, 45.0 ],
+									"text" : "Basketball_drop"
 								}
 
 							}
@@ -1681,7 +1697,7 @@
 					"patching_rect" : [ 512.301147, 85.549995, 179.0, 38.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 817.268066, 69.176331, 166.0, 38.0 ],
-					"text" : "Beat",
+					"text" : "Organ",
 					"textjustification" : 1
 				}
 
@@ -4660,6 +4676,15 @@
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-78", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-120", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-8", 1 ]
 				}
 
 			}

@@ -68,6 +68,7 @@ class Max_Interface:
 		gesture_message = "Gesture " + str(gesture_type)
 		self.send_message (gesture_message)
 
+
 	# Function: send_hand_state
 	# -------------------------
 	# sends a message to max denoting the current state of the hand
@@ -78,13 +79,11 @@ class Max_Interface:
 		hand_state_dict = {}
 
 		#--- Send Palm Coords ---
-		# palm_position = hand.palm_position
-		# palm_position_message = "Palm_Position "
-		# for coord in palm_position:
-			# palm_position_message += str(coord) + " "
-		# self.send_message (palm_position_message)
+		palm_position = hand.palm_position
+		palm_position_message = "Palm_Position " + str(palm_position[0]) + " " + str(palm_position[1]) + " " + str(palm_position[2])
+		self.send_message (palm_position_message)
+		print palm_position_message
 
-		self.send_message ("Palm_Position 40 40 40")
 
 
 

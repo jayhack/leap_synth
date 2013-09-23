@@ -63,7 +63,7 @@ class Leap_Synth:
     def __del__ (self):
 
         ### Step 1: turn off the max patch ###
-        self.max_interface.send_message ('Stop', None, None)
+        self.max_interface.send_gesture ('Stop')
 
         ### Step 2: remove leap listener ###        
         self.controller.remove_listener(self.listener)
@@ -331,7 +331,7 @@ class Leap_Synth:
     def synth_main (self):
         
         ### Step 1: start the max patch ###
-        self.max_interface.send_message ('Start', None, None)
+        self.max_interface.send_gesture ('Start')
 
         ### Step 2: initialize local data ###
         print_message ("Entering Main Loop: Continuous Gesture Recognition")
@@ -350,6 +350,7 @@ class Leap_Synth:
 
             ### Step 3: Get the gesture, if appropriate ###
             send_gesture = None
+
             if observed_gesture.is_full ():
 
                 classification_results = self.gesture_recognizer.classify_gesture (observed_gesture)
@@ -361,8 +362,15 @@ class Leap_Synth:
                     observed_gesture.clear ()
 
 
-            ### Step 4: Send message to max ###
-            self.max_interface.send_message (send_gesture, palm_position, palm_orientation)
+
+            ### Step 4: send a gesture to max if one was observed ###
+            if send_gesture:
+                self.max_interface.send_gesture (send_gesture)
+
+            ### Step 5: Send hand state to max if one was observed ###
+            if len(frame.hands) > 0:
+                self.max_interface.send_hand_state (frame.hands[0])
+
 
 
 
