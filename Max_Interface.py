@@ -79,11 +79,19 @@ class Max_Interface:
 		hand_state_dict = {}
 
 		#--- Send Palm Coords ---
-		palm_position = hand.palm_position
-		palm_position_message = "Palm_Position " + str(palm_position[0]) + " " + str(palm_position[1]) + " " + str(palm_position[2])
+		palm_position = (hand.palm_position[0], hand.palm_position[1], hand.palm_position[2])
+		palm_position_message = "Palm_Position " + " ".join([str(coord) for coord in palm_position])
 		self.send_message (palm_position_message)
-		print palm_position_message
 
+		#--- Send Palm Orientation ---
+		palm_orientation = (hand.palm_normal[0], hand.palm_normal[1], hand.palm_normal[2])
+		palm_orientation_message = "Palm_Orientation " + " ".join([str(coord) for coord in palm_orientation])
+		self.send_message (palm_orientation_message)
+
+		#--- Send Number of Fingers ---
+		num_fingers = len(hand.fingers)
+		num_fingers_message = "Num_Fingers " + str(num_fingers)
+		self.send_message (num_fingers_message)
 
 
 
