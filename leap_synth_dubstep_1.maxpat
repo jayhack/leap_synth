@@ -3082,7 +3082,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 800.726074, 479.255066, 177.0, 33.0 ],
+					"patching_rect" : [ 800.726074, 501.216553, 177.0, 33.0 ],
 					"saved_object_attributes" : 					{
 						"default_fontface" : 0,
 						"default_fontname" : "Arial",
@@ -3760,7 +3760,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
-					"patching_rect" : [ 1371.268066, 518.700317, 517.0, 20.0 ],
+					"patching_rect" : [ 1410.798706, 769.061401, 517.0, 20.0 ],
 					"text" : "buffer~ streisand_buffer /Users/jayhack/CS/NI/leap_synth/Tracks/Random_Samples/crowd.wav"
 				}
 
@@ -4643,7 +4643,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
-					"patching_rect" : [ 1371.268066, 391.426697, 494.0, 33.0 ],
+					"patching_rect" : [ 1410.798706, 641.787781, 494.0, 33.0 ],
 					"text" : "buffer~ synth_buffer /Users/jayhack/CS/NI/leap_synth/Tracks/Dubstep_1_140BPM/Synth/DS_FXB140D-04.wav"
 				}
 
@@ -4658,7 +4658,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
-					"patching_rect" : [ 1371.268066, 358.426697, 525.0, 33.0 ],
+					"patching_rect" : [ 1410.798706, 608.787781, 525.0, 33.0 ],
 					"text" : "buffer~ organ_buffer /Users/jayhack/CS/NI/leap_synth/Tracks/Dubstep_1_140BPM/Organ/DS_BitORgan140D-01.wav"
 				}
 
@@ -4672,7 +4672,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
-					"patching_rect" : [ 1371.268066, 492.255066, 546.0, 20.0 ],
+					"patching_rect" : [ 1410.798706, 742.61615, 546.0, 20.0 ],
 					"text" : "buffer~ bball_buffer /Users/jayhack/CS/NI/leap_synth/Tracks/Random_Samples/basketball_drop.wav"
 				}
 
@@ -4687,7 +4687,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
-					"patching_rect" : [ 1371.268066, 325.426697, 501.0, 33.0 ],
+					"patching_rect" : [ 1410.798706, 575.787781, 501.0, 33.0 ],
 					"text" : "buffer~ bass_buffer /Users/jayhack/CS/NI/leap_synth/Tracks/Dubstep_1_140BPM/Bass/DS_BassB140D-01.wav"
 				}
 
@@ -4701,7 +4701,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
-					"patching_rect" : [ 1371.268066, 465.255066, 496.0, 20.0 ],
+					"patching_rect" : [ 1410.798706, 715.61615, 496.0, 20.0 ],
 					"text" : "buffer~ swish_buffer /Users/jayhack/CS/NI/leap_synth/Tracks/Random_Samples/swish.wav"
 				}
 
@@ -4717,7 +4717,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 1371.268066, 436.785065, 514.0, 20.0 ],
+					"patching_rect" : [ 1410.798706, 687.146118, 514.0, 20.0 ],
 					"text" : "############################[ --- RANDOM SAMPLES --- ]########################",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
@@ -4732,7 +4732,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
-					"patching_rect" : [ 1371.268066, 305.426697, 599.0, 20.0 ],
+					"patching_rect" : [ 1410.798706, 555.787781, 599.0, 20.0 ],
 					"text" : "buffer~ beat_buffer /Users/jayhack/CS/NI/leap_synth/Tracks/Dubstep_1_140BPM/Beats/DS_BeatA140-05.wav"
 				}
 
@@ -4748,7 +4748,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 1371.268066, 277.331512, 514.0, 20.0 ],
+					"patching_rect" : [ 1410.798706, 527.692566, 514.0, 20.0 ],
 					"text" : "############################[ --- COMPONENTS --- ]#######################",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
