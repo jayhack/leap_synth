@@ -237,6 +237,7 @@ class Gesture_Recognizer:
 		for gesture_type in self.gesture_types:
 
 			print_status ("Get_Hmms", "Fitting for gesture_type: " + gesture_type)
+			
 			### Step 1: fill hmm_examples appropriately ###
 			hmm_examples = []
 			for gesture in self.gestures[gesture_type]:

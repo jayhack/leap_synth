@@ -35,7 +35,7 @@ class Gesture:
 	hmm_rep 	= []			# can be passed to an hmm
 
 	#--- Parameters ---
-	gesture_length 			= 40		# number of frames stored in the gesture
+	gesture_length 			= 30		# number of frames stored in the gesture
 	frame_reduction_const 	= 5			# gesture_length/frame_reduction_const = # of frames in final feature rep
 	d1_length 				= 5			# small derivative of motion
 	d2_length 				= 10		# large derivative of motion
